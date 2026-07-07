@@ -59,6 +59,14 @@ export async function updateProfile(formData: FormData) {
 
   if (!user) return { error: "Not authenticated" };
 
+  const birthDate = (formData.get("birth_date") as string) || null;
+  if (birthDate) {
+    const parsed = new Date(birthDate);
+    if (parsed > new Date()) {
+      return { error: "Birth date cannot be in the future" };
+    }
+  }
+
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -66,6 +74,7 @@ export async function updateProfile(formData: FormData) {
       home_airport: (formData.get("home_airport") as string) || null,
       career_goal: (formData.get("career_goal") as string) || null,
       target_airline: (formData.get("target_airline") as string) || null,
+      birth_date: birthDate,
     })
     .eq("id", user.id);
 

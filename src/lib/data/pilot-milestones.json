@@ -1,0 +1,86 @@
+{
+  "version": "1.0",
+  "name": "Flight Path Pilot Milestones",
+  "units": "flight_hours",
+  "milestones": [
+    {
+      "id": "student_pilot",
+      "name": "Student Pilot Certificate",
+      "minimum_age": 16,
+      "faa_minimum_hours": 0,
+      "typical_hours_range": [0, 20],
+      "track_progress": false,
+      "description": "Required before solo flight."
+    },
+    {
+      "id": "first_solo",
+      "name": "First Solo",
+      "minimum_age": 16,
+      "faa_minimum_hours": null,
+      "typical_hours_range": [15, 30],
+      "track_progress": true,
+      "description": "First flight without an instructor."
+    },
+    {
+      "id": "private_pilot",
+      "name": "Private Pilot Certificate",
+      "minimum_age": 17,
+      "faa_minimum_hours": 40,
+      "typical_hours_range": [60, 75],
+      "track_progress": true,
+      "description": "First pilot license."
+    },
+    {
+      "id": "instrument_rating",
+      "name": "Instrument Rating",
+      "minimum_age": 17,
+      "faa_minimum_hours": 50,
+      "typical_hours_range": [80, 120],
+      "track_progress": true,
+      "description": "Adds instrument flying privileges.",
+      "additional_requirements": {
+        "cross_country_pic_hours": 50,
+        "instrument_hours": 40
+      }
+    },
+    {
+      "id": "commercial_pilot",
+      "name": "Commercial Pilot Certificate",
+      "minimum_age": 18,
+      "faa_minimum_hours": 250,
+      "typical_hours_range": [250, 300],
+      "track_progress": true,
+      "description": "Allows pilot to be compensated for flying."
+    },
+    {
+      "id": "certified_flight_instructor",
+      "name": "Certified Flight Instructor (CFI)",
+      "minimum_age": 18,
+      "faa_minimum_hours": 250,
+      "typical_hours_range": [250, 350],
+      "track_progress": true,
+      "description": "Common pathway to build flight hours."
+    },
+    {
+      "id": "atp",
+      "name": "Airline Transport Pilot (ATP)",
+      "minimum_age": 23,
+      "faa_minimum_hours": 1500,
+      "typical_hours_range": [1500, 2000],
+      "track_progress": true,
+      "description": "Required for airline operations."
+    }
+  ],
+  "hour_achievements": [1, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 1250, 1500],
+  "career_progress_markers": [
+    { "name": "Discovery Flight", "hours": 0 },
+    { "name": "Approaching Solo", "hours": 20 },
+    { "name": "FAA Private Pilot Minimum", "hours": 40 },
+    { "name": "Typical Private Pilot Completion", "hours": 75 },
+    { "name": "100 Hour Milestone", "hours": 100 },
+    { "name": "Commercial Pilot Eligibility", "hours": 250 },
+    { "name": "Professional Pilot Milestone", "hours": 500 },
+    { "name": "Airline Pathway Milestone", "hours": 1000 },
+    { "name": "ATP Eligibility", "hours": 1500 }
+  ]
+}

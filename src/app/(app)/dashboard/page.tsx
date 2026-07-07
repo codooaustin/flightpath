@@ -17,6 +17,8 @@ export default async function DashboardPage({
       events={data.events}
       expenses={data.expenses}
       journal={data.journal}
+      flights={data.flights}
+      studentProfile={data.studentProfile}
     />
   );
 }

@@ -27,6 +27,7 @@ import {
   BookOpen,
   FolderOpen,
   Settings,
+  Plane,
 } from "lucide-react";
 import { signOut } from "@/lib/actions/auth";
 import type { Profile } from "@/types/models";
@@ -36,6 +37,7 @@ const navItems: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/roadmap", label: "Roadmap", icon: Map },
   { href: "/missions", label: "Missions", icon: Target },
+  { href: "/logbook", label: "Logbook", icon: Plane },
   { href: "/calendar", label: "Calendar", icon: Calendar },
   { href: "/costs", label: "Costs", icon: DollarSign },
   { href: "/journal", label: "Journal", icon: BookOpen },

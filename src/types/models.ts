@@ -95,6 +95,26 @@ export interface Expense {
   created_at: string;
 }
 
+export interface Flight {
+  id: string;
+  user_id: string;
+  date: string;
+  aircraft: string | null;
+  tail_number: string | null;
+  departure_airport: string | null;
+  arrival_airport: string | null;
+  instructor: string | null;
+  flight_time: number;
+  pic_time: number | null;
+  dual_time: number | null;
+  cross_country_time: number | null;
+  night_time: number | null;
+  instrument_time: number | null;
+  landings: number | null;
+  notes: string | null;
+  created_at: string;
+}
+
 export interface JournalEntry {
   id: string;
   user_id: string;

@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getActiveStudentId } from "@/lib/auth";
-import type { Mission, UserMission } from "@/types/models";
+import type { Mission, Profile, UserMission } from "@/types/models";
 
 function mergeUserMissions(
   userMissions: UserMission[],
@@ -24,6 +24,8 @@ export async function getDashboardData(searchParams?: { student?: string }) {
     { data: events },
     { data: expenses },
     { data: journal },
+    { data: flights },
+    { data: studentProfile },
   ] = await Promise.all([
     supabase.from("stages").select("*").order("order_number"),
     supabase.from("missions").select("*").order("order_number"),
@@ -42,6 +44,12 @@ export async function getDashboardData(searchParams?: { student?: string }) {
       .eq("user_id", studentId)
       .order("entry_date", { ascending: false })
       .limit(1),
+    supabase
+      .from("flights")
+      .select("*")
+      .eq("user_id", studentId)
+      .order("date", { ascending: false }),
+    supabase.from("profiles").select("*").eq("id", studentId).single(),
   ]);
 
   const missionList = missions ?? [];
@@ -53,6 +61,24 @@ export async function getDashboardData(searchParams?: { student?: string }) {
     events: events ?? [],
     expenses: expenses ?? [],
     journal: journal ?? [],
+    flights: flights ?? [],
+    studentProfile: (studentProfile as Profile | null) ?? null,
+    studentId,
+  };
+}
+
+export async function getLogbookData(searchParams?: { student?: string }) {
+  const supabase = await createClient();
+  const studentId = await getActiveStudentId(searchParams);
+
+  const { data: flights } = await supabase
+    .from("flights")
+    .select("*")
+    .eq("user_id", studentId)
+    .order("date", { ascending: false });
+
+  return {
+    flights: flights ?? [],
     studentId,
   };
 }

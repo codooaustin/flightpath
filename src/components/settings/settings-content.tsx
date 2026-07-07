@@ -72,6 +72,18 @@ export function SettingsContent({
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="birth_date">Date of Birth</Label>
+              <Input
+                id="birth_date"
+                name="birth_date"
+                type="date"
+                defaultValue={profile.birth_date ?? ""}
+              />
+              <p className="text-xs text-muted-foreground">
+                Used to track FAA age requirements for certifications.
+              </p>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="home_airport">Home Airport</Label>
               <Input
                 id="home_airport"
