@@ -1,10 +1,60 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export async function signUp(formData: FormData) {
+  const rawSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "";
+  const supabaseUrl = getSupabaseUrl();
+  const anonKey = getSupabaseAnonKey();
+
+  // #region agent log
+  let parsedUrl: { hostname: string; pathname: string; hasTrailingSlash: boolean } | null = null;
+  try {
+    const u = new URL(supabaseUrl);
+    parsedUrl = {
+      hostname: u.hostname,
+      pathname: u.pathname,
+      hasTrailingSlash: supabaseUrl.endsWith("/"),
+    };
+  } catch {
+    parsedUrl = null;
+  }
+  fetch("http://127.0.0.1:7748/ingest/31e8cc83-dec8-45f9-bd98-0bf9041c7005", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "27026c",
+    },
+    body: JSON.stringify({
+      sessionId: "27026c",
+      runId: "pre-fix",
+      hypothesisId: "A,C",
+      location: "src/lib/actions/auth.ts:signUp:entry",
+      message: "signUp env and URL shape",
+      data: {
+        rawSupabaseUrlPathname: (() => {
+          try {
+            return new URL(rawSupabaseUrl).pathname;
+          } catch {
+            return null;
+          }
+        })(),
+        normalizedSupabaseUrlPathname: parsedUrl?.pathname ?? null,
+        urlWasNormalized: rawSupabaseUrl !== supabaseUrl,
+        supabaseUrlSet: Boolean(supabaseUrl),
+        anonKeySet: Boolean(anonKey),
+        anonKeyLength: anonKey.length,
+        parsedUrl,
+        isSupabaseHost: parsedUrl?.hostname.endsWith(".supabase.co") ?? false,
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
+
   const supabase = await createClient();
 
   const email = formData.get("email") as string;
@@ -21,6 +71,30 @@ export async function signUp(formData: FormData) {
   });
 
   if (error) {
+    // #region agent log
+    fetch("http://127.0.0.1:7748/ingest/31e8cc83-dec8-45f9-bd98-0bf9041c7005", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "27026c",
+      },
+      body: JSON.stringify({
+        sessionId: "27026c",
+        runId: "pre-fix",
+        hypothesisId: "A,B,C,D",
+        location: "src/lib/actions/auth.ts:signUp:error",
+        message: "signUp supabase auth error",
+        data: {
+          errorMessage: error.message,
+          errorName: error.name,
+          errorStatus: error.status,
+          errorCode: (error as { code?: string }).code ?? null,
+          parsedUrl,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
     return { error: error.message };
   }
 
