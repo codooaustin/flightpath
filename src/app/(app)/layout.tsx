@@ -1,30 +1,9 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import {
-  LayoutDashboard,
-  Map,
-  Target,
-  Calendar,
-  DollarSign,
-  BookOpen,
-  FolderOpen,
-  Settings,
-  Plane,
-} from "lucide-react";
+import { Plane } from "lucide-react";
 import { getCurrentProfile, getLinkedStudents } from "@/lib/auth";
 import { AppSidebar } from "@/components/app-sidebar";
 import { StudentSwitcher } from "@/components/student-switcher";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/roadmap", label: "Roadmap", icon: Map },
-  { href: "/missions", label: "Missions", icon: Target },
-  { href: "/calendar", label: "Calendar", icon: Calendar },
-  { href: "/costs", label: "Costs", icon: DollarSign },
-  { href: "/journal", label: "Journal", icon: BookOpen },
-  { href: "/hangar", label: "Hangar", icon: FolderOpen },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
 
 export default async function AppLayout({
   children,
@@ -40,7 +19,6 @@ export default async function AppLayout({
   return (
     <div className="flex min-h-screen">
       <AppSidebar
-        navItems={navItems}
         profile={profile}
         logo={
           <Link href="/dashboard" className="flex items-center gap-2">

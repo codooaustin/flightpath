@@ -16,30 +16,39 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu, LogOut } from "lucide-react";
+import {
+  Menu,
+  LogOut,
+  LayoutDashboard,
+  Map,
+  Target,
+  Calendar,
+  DollarSign,
+  BookOpen,
+  FolderOpen,
+  Settings,
+} from "lucide-react";
 import { signOut } from "@/lib/actions/auth";
 import type { Profile } from "@/types/models";
 import type { LucideIcon } from "lucide-react";
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-}
+const navItems: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/roadmap", label: "Roadmap", icon: Map },
+  { href: "/missions", label: "Missions", icon: Target },
+  { href: "/calendar", label: "Calendar", icon: Calendar },
+  { href: "/costs", label: "Costs", icon: DollarSign },
+  { href: "/journal", label: "Journal", icon: BookOpen },
+  { href: "/hangar", label: "Hangar", icon: FolderOpen },
+  { href: "/settings", label: "Settings", icon: Settings },
+];
 
 interface AppSidebarProps {
-  navItems: NavItem[];
   profile: Profile | null;
   logo: React.ReactNode;
 }
 
-function NavLinks({
-  navItems,
-  pathname,
-}: {
-  navItems: NavItem[];
-  pathname: string;
-}) {
+function NavLinks({ pathname }: { pathname: string }) {
   return (
     <nav className="flex flex-col gap-1">
       {navItems.map((item) => {
@@ -65,7 +74,7 @@ function NavLinks({
   );
 }
 
-export function AppSidebar({ navItems, profile, logo }: AppSidebarProps) {
+export function AppSidebar({ profile, logo }: AppSidebarProps) {
   const pathname = usePathname();
   const initials = profile?.name
     ?.split(" ")
@@ -79,7 +88,7 @@ export function AppSidebar({ navItems, profile, logo }: AppSidebarProps) {
       <aside className="hidden w-64 flex-col border-r bg-card lg:flex">
         <div className="flex h-14 items-center border-b px-4">{logo}</div>
         <div className="flex-1 overflow-auto p-4">
-          <NavLinks navItems={navItems} pathname={pathname} />
+          <NavLinks pathname={pathname} />
         </div>
         <div className="border-t p-4">
           <DropdownMenu>
@@ -129,7 +138,7 @@ export function AppSidebar({ navItems, profile, logo }: AppSidebarProps) {
         <SheetContent side="left" className="w-64 p-0">
           <div className="flex h-14 items-center border-b px-4">{logo}</div>
           <div className="p-4">
-            <NavLinks navItems={navItems} pathname={pathname} />
+            <NavLinks pathname={pathname} />
           </div>
         </SheetContent>
       </Sheet>
