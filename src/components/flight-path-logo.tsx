@@ -21,7 +21,7 @@ export function FlightPathLogo({
     <span className={cn("inline-flex items-center gap-2", className)}>
       <span
         className={cn(
-          "font-runway leading-none tracking-wider text-sky-600",
+          "font-bold leading-none tracking-wider text-sky-600",
           runwayClass
         )}
       >
@@ -52,7 +52,7 @@ export function StageNumber({
   className?: string;
 }) {
   return (
-    <span className={cn("font-runway tabular-nums leading-none", className)}>
+    <span className={cn("tabular-nums leading-none font-bold", className)}>
       {String(value).padStart(2, "0")}
     </span>
   );
