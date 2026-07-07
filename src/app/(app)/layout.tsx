@@ -1,8 +1,7 @@
 import { Suspense } from "react";
-import Link from "next/link";
-import { Plane } from "lucide-react";
 import { getCurrentProfile, getLinkedStudents } from "@/lib/auth";
 import { AppSidebar } from "@/components/app-sidebar";
+import { FlightPathLogo } from "@/components/flight-path-logo";
 import { StudentSwitcher } from "@/components/student-switcher";
 
 export default async function AppLayout({
@@ -18,22 +17,11 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-screen">
-      <AppSidebar
-        profile={profile}
-        logo={
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Plane className="h-6 w-6 text-sky-600" />
-            <span className="text-lg font-bold">Flight Path</span>
-          </Link>
-        }
-      />
+      <AppSidebar profile={profile} logo={<FlightPathLogo />} />
       <div className="flex flex-1 flex-col">
         <header className="flex h-14 items-center justify-between border-b px-4 lg:px-6">
           <div className="lg:hidden">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <Plane className="h-5 w-5 text-sky-600" />
-              <span className="font-bold">Flight Path</span>
-            </Link>
+            <FlightPathLogo size="sm" />
           </div>
           {profile?.role === "parent" && linkedStudents.length > 0 && (
             <Suspense fallback={null}>
