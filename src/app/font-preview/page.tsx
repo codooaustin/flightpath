@@ -50,6 +50,25 @@ export default function FontPreviewPage() {
           </p>
         </div>
 
+        <section className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5">
+          <h2 className="font-semibold text-amber-200">Font loading note</h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-300">
+            If the runway samples looked like Times New Roman serifs, that was a
+            CSS bug — the custom font wasn&apos;t being applied and the browser
+            fell back to its default serif. The samples below should now match
+            the clean ICAO-style glyphs shown in the{" "}
+            <a
+              href="https://github.com/ryo-a/Open-Runway-Fonts/blob/main/img/open-runway-numbers.png"
+              className="text-sky-400 underline-offset-4 hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GitHub preview
+            </a>
+            .
+          </p>
+        </section>
+
         <section className="space-y-4">
           <div>
             <h2 className="text-lg font-semibold text-sky-300">Open Runway Numbers</h2>
@@ -66,8 +85,7 @@ export default function FontPreviewPage() {
               {runwaySamples.map((sample) => (
                 <div key={sample} className="space-y-3">
                   <p
-                    className="text-center text-6xl tracking-[0.35em] text-white md:text-8xl"
-                    style={{ fontFamily: "var(--font-runway)" }}
+                    className="font-runway text-center text-6xl tracking-[0.35em] text-white md:text-8xl"
                   >
                     {sample}
                   </p>
@@ -96,10 +114,7 @@ export default function FontPreviewPage() {
                 key={sample}
                 className="flex min-h-28 flex-col items-center justify-center rounded-lg border-2 border-yellow-400 bg-black px-4 py-6"
               >
-                <p
-                  className="text-center text-3xl leading-none text-yellow-400 md:text-4xl"
-                  style={{ fontFamily: "var(--font-taxiway)" }}
-                >
+                <p className="font-taxiway text-center text-3xl leading-none text-yellow-400 md:text-4xl">
                   {sample}
                 </p>
                 <p className="mt-3 font-sans text-[10px] uppercase tracking-wider text-yellow-400/50">
@@ -126,19 +141,13 @@ export default function FontPreviewPage() {
           <div className="flex flex-wrap items-center gap-6">
             <div className="flex items-center gap-3">
               <Plane className="h-8 w-8 text-sky-400" />
-              <span
-                className="text-4xl text-white"
-                style={{ fontFamily: "var(--font-runway)" }}
-              >
+              <span className="font-runway text-4xl text-white">
                 09L
               </span>
             </div>
             <div>
               <p className="font-sans text-2xl font-bold">Flight Path</p>
-              <p
-                className="text-sm text-sky-300"
-                style={{ fontFamily: "var(--font-taxiway)" }}
-              >
+              <p className="font-taxiway text-sm text-sky-300">
                 RWY 27 / TAXI A
               </p>
             </div>
