@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
-import { B612, B612_Mono } from "next/font/google";
+import { Istok_Web } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const b612 = B612({
-  variable: "--font-b612",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const b612Mono = B612_Mono({
-  variable: "--font-b612-mono",
+const istokWeb = Istok_Web({
+  variable: "--font-istok-web",
   subsets: ["latin"],
   weight: ["400", "700"],
 });
@@ -29,7 +23,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${b612.variable} ${b612Mono.variable} h-full antialiased`}
+      className={`${istokWeb.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         {children}
