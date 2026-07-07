@@ -95,133 +95,6 @@ export function DashboardContent({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plane className="h-5 w-5 text-sky-600" />
-              Flight Hours
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="text-3xl font-bold">
-                {formatHours(hourTotals.total)}
-              </p>
-              <p className="text-sm text-muted-foreground">Total logged hours</p>
-            </div>
-            {nextMilestone && milestoneTarget != null ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    Next: {nextMilestone.name}
-                  </span>
-                  <span className="font-medium">
-                    {formatHours(hourTotals.total)} / {milestoneTarget} hrs
-                  </span>
-                </div>
-                <Progress value={milestoneProgress} className="h-2" />
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                All tracked certification hour targets met.
-              </p>
-            )}
-            {nextAchievement && (
-              <Badge variant="secondary">
-                {nextAchievement.target} hrs —{" "}
-                {formatHours(nextAchievement.remaining)} to go
-              </Badge>
-            )}
-            <p className="text-xs text-muted-foreground">
-              {careerMarker.current.name}
-              {careerMarker.next
-                ? ` · Next: ${careerMarker.next.name}`
-                : ""}
-            </p>
-            <Link
-              href="/logbook"
-              className="text-sm font-medium text-sky-600 hover:underline"
-            >
-              Log a flight →
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-sky-600" />
-              Certification & Age
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {age != null ? (
-              <p className="text-sm">
-                <span className="text-muted-foreground">Age: </span>
-                <span className="font-medium">{age} years</span>
-              </p>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Add your birthday in{" "}
-                <Link href="/settings" className="text-sky-600 hover:underline">
-                  Settings
-                </Link>{" "}
-                to track age requirements.
-              </p>
-            )}
-            {nextMilestone ? (
-              <>
-                <div>
-                  <p className="font-medium">{nextMilestone.name}</p>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {nextMilestone.description}
-                  </p>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {formatAgeEligibility(
-                    studentProfile?.birth_date ?? null,
-                    nextMilestone
-                  )}
-                </p>
-                {instrumentProgress && (
-                  <div className="space-y-2 border-t pt-3">
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span>Instrument hours</span>
-                        <span>
-                          {formatHours(instrumentProgress.instrument.current)} /{" "}
-                          {instrumentProgress.instrument.target}
-                        </span>
-                      </div>
-                      <Progress
-                        value={instrumentProgress.instrument.percent}
-                        className="h-1.5"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span>PIC cross-country (approx.)</span>
-                        <span>
-                          {formatHours(instrumentProgress.crossCountryPic.current)}{" "}
-                          / {instrumentProgress.crossCountryPic.target}
-                        </span>
-                      </div>
-                      <Progress
-                        value={instrumentProgress.crossCountryPic.percent}
-                        className="h-1.5"
-                      />
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No remaining hour-based certification targets.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -346,6 +219,133 @@ export function DashboardContent({
             ) : (
               <p className="text-sm text-muted-foreground">
                 No journal entries yet. Start capturing your journey.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plane className="h-5 w-5 text-sky-600" />
+              Flight Hours
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-3xl font-bold">
+                {formatHours(hourTotals.total)}
+              </p>
+              <p className="text-sm text-muted-foreground">Total logged hours</p>
+            </div>
+            {nextMilestone && milestoneTarget != null ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Next: {nextMilestone.name}
+                  </span>
+                  <span className="font-medium">
+                    {formatHours(hourTotals.total)} / {milestoneTarget} hrs
+                  </span>
+                </div>
+                <Progress value={milestoneProgress} className="h-2" />
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                All tracked certification hour targets met.
+              </p>
+            )}
+            {nextAchievement && (
+              <Badge variant="secondary">
+                {nextAchievement.target} hrs —{" "}
+                {formatHours(nextAchievement.remaining)} to go
+              </Badge>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {careerMarker.current.name}
+              {careerMarker.next
+                ? ` · Next: ${careerMarker.next.name}`
+                : ""}
+            </p>
+            <Link
+              href="/logbook"
+              className="text-sm font-medium text-sky-600 hover:underline"
+            >
+              Log a flight →
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-sky-600" />
+              Certification & Age
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {age != null ? (
+              <p className="text-sm">
+                <span className="text-muted-foreground">Age: </span>
+                <span className="font-medium">{age} years</span>
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Add your birthday in{" "}
+                <Link href="/settings" className="text-sky-600 hover:underline">
+                  Settings
+                </Link>{" "}
+                to track age requirements.
+              </p>
+            )}
+            {nextMilestone ? (
+              <>
+                <div>
+                  <p className="font-medium">{nextMilestone.name}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {nextMilestone.description}
+                  </p>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {formatAgeEligibility(
+                    studentProfile?.birth_date ?? null,
+                    nextMilestone
+                  )}
+                </p>
+                {instrumentProgress && (
+                  <div className="space-y-2 border-t pt-3">
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span>Instrument hours</span>
+                        <span>
+                          {formatHours(instrumentProgress.instrument.current)} /{" "}
+                          {instrumentProgress.instrument.target}
+                        </span>
+                      </div>
+                      <Progress
+                        value={instrumentProgress.instrument.percent}
+                        className="h-1.5"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span>PIC cross-country (approx.)</span>
+                        <span>
+                          {formatHours(instrumentProgress.crossCountryPic.current)}{" "}
+                          / {instrumentProgress.crossCountryPic.target}
+                        </span>
+                      </div>
+                      <Progress
+                        value={instrumentProgress.crossCountryPic.percent}
+                        className="h-1.5"
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No remaining hour-based certification targets.
               </p>
             )}
           </CardContent>
