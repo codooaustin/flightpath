@@ -67,14 +67,28 @@ export function CostsContent({ expenses, isStudent }: CostsContentProps) {
   }));
 
   async function handleCreate(formData: FormData) {
+    const receipt = formData.get("receipt") as File | null;
+    const maxBytes = 9 * 1024 * 1024;
+
+    if (receipt && receipt.size > maxBytes) {
+      toast.error("Receipt must be 9 MB or smaller");
+      return;
+    }
+
     setLoading(true);
     formData.set("category", category);
-    const result = await createExpense(formData);
-    setLoading(false);
-    if (result?.error) toast.error(result.error);
-    else {
-      toast.success("Expense added");
-      setOpen(false);
+
+    try {
+      const result = await createExpense(formData);
+      if (result?.error) toast.error(result.error);
+      else {
+        toast.success("Expense added");
+        setOpen(false);
+      }
+    } catch {
+      toast.error("Failed to save expense. Try a smaller receipt or try again.");
+    } finally {
+      setLoading(false);
     }
   }
 

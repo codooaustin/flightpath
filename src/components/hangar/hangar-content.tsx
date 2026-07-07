@@ -42,14 +42,28 @@ export function HangarContent({ files, isStudent }: HangarContentProps) {
   const categories = Object.keys(FILE_CATEGORY_LABELS) as FileCategory[];
 
   async function handleUpload(formData: FormData) {
+    const file = formData.get("file") as File | null;
+    const maxBytes = 9 * 1024 * 1024;
+
+    if (file && file.size > maxBytes) {
+      toast.error("File must be 9 MB or smaller");
+      return;
+    }
+
     setLoading(true);
     formData.set("category", category);
-    const result = await uploadFile(formData);
-    setLoading(false);
-    if (result?.error) toast.error(result.error);
-    else {
-      toast.success("File uploaded");
-      setOpen(false);
+
+    try {
+      const result = await uploadFile(formData);
+      if (result?.error) toast.error(result.error);
+      else {
+        toast.success("File uploaded");
+        setOpen(false);
+      }
+    } catch {
+      toast.error("Upload failed. Try a smaller file or try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -171,7 +185,16 @@ export function HangarContent({ files, isStudent }: HangarContentProps) {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="file">File</Label>
-                  <Input id="file" name="file" type="file" required />
+                  <Input
+                    id="file"
+                    name="file"
+                    type="file"
+                    accept="image/*,.pdf,.doc,.docx"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Max file size: 9 MB
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>

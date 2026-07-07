@@ -17,10 +17,6 @@ export const metadata: Metadata = {
   title: "Flight Path",
   description:
     "Your personal aviation career companion — from first flight to airline captain.",
-  icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/apple-icon.svg", type: "image/svg+xml" }],
-  },
 };
 
 export default function RootLayout({
