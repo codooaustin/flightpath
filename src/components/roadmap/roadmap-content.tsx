@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { StageNumber } from "@/components/flight-path-logo";
+import { CheckCircle2, Circle, Lock } from "lucide-react";
 import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
 import {
   calculateStageProgress,
@@ -58,14 +58,20 @@ export function RoadmapContent({
                 className={cn(
                   "relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2",
                   status === "completed" &&
-                    "border-green-500 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300",
+                    "border-green-500 bg-green-50 text-green-600",
                   status === "current" &&
-                    "border-sky-500 bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300",
+                    "border-sky-500 bg-sky-50 text-sky-600",
                   status === "locked" &&
                     "border-muted bg-muted text-muted-foreground"
                 )}
               >
-                <StageNumber value={stage.order_number} className="text-sm" />
+                {status === "completed" ? (
+                  <CheckCircle2 className="h-5 w-5" />
+                ) : status === "current" ? (
+                  <Circle className="h-5 w-5" />
+                ) : (
+                  <Lock className="h-4 w-4" />
+                )}
               </div>
               <Card
                 className={cn(

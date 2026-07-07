@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { FlightPathLogo } from "@/components/flight-path-logo";
+import { Plane } from "lucide-react";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
@@ -34,8 +34,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-sky-50 to-white p-4 dark:from-slate-950 dark:to-slate-900">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-3 flex justify-center">
-            <FlightPathLogo size="lg" href="/login" />
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900">
+            <Plane className="h-6 w-6 text-sky-600" />
           </div>
           <CardTitle className="text-2xl">Welcome back</CardTitle>
           <CardDescription>

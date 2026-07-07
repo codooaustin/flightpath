@@ -14,7 +14,6 @@ import {
 } from "@/lib/calculations/costs";
 import { EVENT_TYPE_LABELS } from "@/types/models";
 import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
-import { StageNumber } from "@/components/flight-path-logo";
 import type {
   CalendarEvent,
   Expense,
@@ -67,23 +66,13 @@ export function DashboardContent({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-start gap-4">
-                {currentStage && (
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 dark:border-sky-800 dark:bg-sky-950">
-                    <StageNumber
-                      value={currentStage.order_number}
-                      className="text-2xl text-sky-700 dark:text-sky-300"
-                    />
-                  </div>
-                )}
-                <div>
-                  <p className="text-2xl font-bold">
-                    {currentStage?.name ?? "Getting Started"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {currentStage?.description}
-                  </p>
-                </div>
+              <div>
+                <p className="text-2xl font-bold">
+                  {currentStage?.name ?? "Getting Started"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {currentStage?.description}
+                </p>
               </div>
               <Badge variant="secondary">{progress.percentage}% complete</Badge>
             </div>
