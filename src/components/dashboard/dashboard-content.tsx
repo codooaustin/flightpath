@@ -13,6 +13,7 @@ import {
   formatCurrency,
 } from "@/lib/calculations/costs";
 import { EVENT_TYPE_LABELS } from "@/types/models";
+import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
 import type {
   CalendarEvent,
   Expense,
@@ -117,7 +118,7 @@ export function DashboardContent({
                 <p className="text-sm text-muted-foreground line-clamp-2">
                   {nextMission.mission.description}
                 </p>
-                <Badge>{nextMission.status.replace("_", " ")}</Badge>
+                <MissionStatusBadge status={nextMission.status} />
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">

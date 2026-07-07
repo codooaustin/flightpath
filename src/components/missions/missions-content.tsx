@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -20,6 +19,7 @@ import {
 import { updateMissionStatus } from "@/lib/actions/missions";
 import { MISSION_STATUS_LABELS } from "@/types/models";
 import type { Mission, MissionStatus, Stage, UserMission } from "@/types/models";
+import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
 import { formatCurrency } from "@/lib/calculations/costs";
 import { toast } from "sonner";
 
@@ -111,9 +111,7 @@ export function MissionsContent({
                 <CardTitle className="text-base">
                   {um.mission?.title ?? "Mission"}
                 </CardTitle>
-                <Badge variant="outline">
-                  {MISSION_STATUS_LABELS[um.status]}
-                </Badge>
+                <MissionStatusBadge status={um.status} />
               </div>
             </CardHeader>
             <CardContent>

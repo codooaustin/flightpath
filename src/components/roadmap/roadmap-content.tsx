@@ -10,8 +10,8 @@ import {
   getCurrentStage,
   getStageStatus,
 } from "@/lib/calculations/progress";
-import { MISSION_STATUS_LABELS } from "@/types/models";
 import type { Mission, Stage, UserMission } from "@/types/models";
+import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/calculations/costs";
 
@@ -123,9 +123,7 @@ export function RoadmapContent({
                                   : ""}
                               </p>
                             </div>
-                            <Badge variant="outline">
-                              {MISSION_STATUS_LABELS[um?.status ?? "locked"]}
-                            </Badge>
+                            <MissionStatusBadge status={um?.status ?? "locked"} />
                           </li>
                         );
                       })}
