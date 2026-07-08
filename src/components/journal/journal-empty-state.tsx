@@ -6,6 +6,10 @@ import {
   type JournalTemplate,
 } from "@/lib/journal/entry-templates";
 import { BookOpen, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const TEMPLATE_BUTTON_CLASS =
+  "h-auto min-w-0 w-full shrink whitespace-normal flex-col items-stretch gap-1 py-3 text-left";
 
 interface JournalEmptyStateProps {
   missionSuggestion?: JournalTemplate | null;
@@ -29,12 +33,7 @@ export function JournalEmptyState({
   }
 
   const templates = missionSuggestion
-    ? [
-        missionSuggestion,
-        ...JOURNAL_TEMPLATES.filter(
-          (template) => template.title !== missionSuggestion.title
-        ).slice(0, 2),
-      ]
+    ? JOURNAL_TEMPLATES.slice(0, 3)
     : JOURNAL_TEMPLATES;
 
   return (
@@ -55,11 +54,11 @@ export function JournalEmptyState({
           </p>
           <Button
             variant="outline"
-            className="h-auto w-full flex-col items-start gap-1 py-3 text-left"
+            className={TEMPLATE_BUTTON_CLASS}
             onClick={() => onUseTemplate(missionSuggestion)}
           >
-            <span className="font-medium">{missionSuggestion.title}</span>
-            <span className="text-xs font-normal text-muted-foreground">
+            <span className="font-medium leading-snug">{missionSuggestion.title}</span>
+            <span className="text-xs leading-snug font-normal text-muted-foreground">
               {missionSuggestion.description}
             </span>
           </Button>
@@ -71,11 +70,16 @@ export function JournalEmptyState({
           <Button
             key={template.title}
             variant="outline"
-            className="h-auto flex-col items-start gap-1 py-3 text-left"
+            className={TEMPLATE_BUTTON_CLASS}
             onClick={() => onUseTemplate(template)}
           >
-            <span className="font-medium">{template.title}</span>
-            <span className="text-xs font-normal text-muted-foreground">
+            <span className="font-medium leading-snug">{template.title}</span>
+            <span
+              className={cn(
+                "text-xs leading-snug font-normal text-muted-foreground",
+                "line-clamp-3"
+              )}
+            >
               {template.description}
             </span>
           </Button>
