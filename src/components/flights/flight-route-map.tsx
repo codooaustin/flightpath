@@ -41,11 +41,16 @@ interface FlightRouteMapProps {
 
 export function FlightRouteMap({ entry, className }: FlightRouteMapProps) {
   if (!entry || entry.points.length === 0) {
+    const message =
+      entry && entry.unresolvedCodes.length > 0
+        ? `Could not locate ${entry.unresolvedCodes.join(", ")} on the map. Check the airport codes and try again.`
+        : "Add airport codes to a flight to see the route map.";
+
     return (
       <div
-        className={`flex h-48 items-center justify-center rounded-lg border bg-muted/30 text-sm text-muted-foreground ${className ?? ""}`}
+        className={`flex h-48 items-center justify-center rounded-lg border bg-muted/30 px-4 text-center text-sm text-muted-foreground ${className ?? ""}`}
       >
-        Add airport codes to a flight to see the route map.
+        {message}
       </div>
     );
   }

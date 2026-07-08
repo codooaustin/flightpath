@@ -23,6 +23,7 @@ export interface FlightMapEntry {
   landings: number | null;
   aircraft: string | null;
   points: FlightMapPoint[];
+  unresolvedCodes: string[];
 }
 
 export async function buildFlightMapEntries(
@@ -45,10 +46,16 @@ export async function buildFlightMapEntries(
       flight.arrival_airport
     );
 
+    const unresolvedCodes: string[] = [];
     const points: FlightMapPoint[] = stops
       .map((stop) => {
         const airport = airports.get(stop.airport);
-        if (!airport) return null;
+        if (!airport) {
+          if (!unresolvedCodes.includes(stop.airport)) {
+            unresolvedCodes.push(stop.airport);
+          }
+          return null;
+        }
         return {
           lat: airport.lat,
           lng: airport.lng,
@@ -71,6 +78,7 @@ export async function buildFlightMapEntries(
       landings: flight.landings,
       aircraft: flight.aircraft,
       points,
+      unresolvedCodes,
     };
   });
 }

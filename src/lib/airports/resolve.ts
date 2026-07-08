@@ -9,6 +9,18 @@ export interface AirportCoordinates {
 
 const cache = new Map<string, AirportCoordinates | null>();
 
+const AVIATION_WEATHER_API =
+  "https://aviationweather.gov/api/data/airport";
+
+interface AviationWeatherAirport {
+  icaoId?: string;
+  iataId?: string;
+  faaId?: string;
+  name?: string;
+  lat?: number;
+  lon?: number;
+}
+
 function airportLookupKeys(code: string): string[] {
   const normalized = normalizeAirportCode(code);
   const keys = new Set<string>([normalized]);
@@ -20,42 +32,60 @@ function airportLookupKeys(code: string): string[] {
   return [...keys];
 }
 
-async function fetchFromOpenAip(code: string): Promise<AirportCoordinates | null> {
+function airportIdentifiers(airport: AviationWeatherAirport): string[] {
+  return [airport.icaoId, airport.faaId, airport.iataId]
+    .filter((id): id is string => Boolean(id) && id !== "-")
+    .map((id) => id.toUpperCase());
+}
+
+function matchAirport(
+  airports: AviationWeatherAirport[],
+  code: string
+): AirportCoordinates | null {
   const keys = airportLookupKeys(code);
 
-  for (const key of keys) {
-    const url = new URL("https://api.core.openaip.net/api/airports");
-    url.searchParams.set("page", "1");
-    url.searchParams.set("limit", "1");
-    url.searchParams.set("icaoCode", key);
+  for (const airport of airports) {
+    const identifiers = airportIdentifiers(airport);
+    if (!keys.some((key) => identifiers.includes(key))) continue;
 
-    const response = await fetch(url.toString(), {
-      next: { revalidate: 60 * 60 * 24 * 7 },
-    });
-
-    if (!response.ok) continue;
-
-    const data = (await response.json()) as {
-      items?: Array<{
-        icaoCode?: string;
-        name?: string;
-        geometry?: { coordinates?: [number, number] };
-      }>;
-    };
-
-    const airport = data.items?.[0];
-    const coords = airport?.geometry?.coordinates;
-    if (!coords || coords.length < 2) continue;
+    const { lat, lon } = airport;
+    if (lat == null || lon == null) continue;
 
     return {
-      code: key,
-      name: airport.name ?? null,
-      lat: coords[1],
-      lng: coords[0],
+      code: normalizeAirportCode(code),
+      name: airport.name?.trim() ?? null,
+      lat,
+      lng: lon,
     };
   }
 
   return null;
+}
+
+async function fetchFromAviationWeather(
+  lookupIds: string[]
+): Promise<AviationWeatherAirport[]> {
+  if (lookupIds.length === 0) return [];
+
+  const url = new URL(AVIATION_WEATHER_API);
+  url.searchParams.set("ids", lookupIds.join(","));
+  url.searchParams.set("format", "json");
+
+  const response = await fetch(url.toString(), {
+    next: { revalidate: 60 * 60 * 24 * 7 },
+  });
+
+  if (!response.ok || response.status === 204) return [];
+
+  const text = await response.text();
+  if (!text.trim()) return [];
+
+  try {
+    const data = JSON.parse(text) as AviationWeatherAirport[];
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
 }
 
 export async function resolveAirport(
@@ -68,7 +98,9 @@ export async function resolveAirport(
     return cache.get(normalized) ?? null;
   }
 
-  const result = await fetchFromOpenAip(normalized);
+  const lookupIds = airportLookupKeys(normalized);
+  const airports = await fetchFromAviationWeather(lookupIds);
+  const result = matchAirport(airports, normalized);
   cache.set(normalized, result);
   return result;
 }
@@ -78,13 +110,29 @@ export async function resolveAirports(
 ): Promise<Map<string, AirportCoordinates>> {
   const unique = [...new Set(codes.map(normalizeAirportCode).filter(Boolean))];
   const resolved = new Map<string, AirportCoordinates>();
+  const pending: string[] = [];
 
-  await Promise.all(
-    unique.map(async (code) => {
-      const airport = await resolveAirport(code);
+  for (const code of unique) {
+    if (cache.has(code)) {
+      const cached = cache.get(code);
+      if (cached) resolved.set(code, cached);
+      continue;
+    }
+    pending.push(code);
+  }
+
+  if (pending.length > 0) {
+    const lookupIds = [
+      ...new Set(pending.flatMap((code) => airportLookupKeys(code))),
+    ];
+    const airports = await fetchFromAviationWeather(lookupIds);
+
+    for (const code of pending) {
+      const airport = matchAirport(airports, code);
+      cache.set(code, airport);
       if (airport) resolved.set(code, airport);
-    })
-  );
+    }
+  }
 
   return resolved;
 }
