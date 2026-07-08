@@ -76,6 +76,34 @@ export function FaaHelpLink({ resource, className }: FaaHelpLinkProps) {
   );
 }
 
+export function FaaResourceLinks({
+  resources,
+  title = "More FAA resources",
+}: FaaResourceLinksProps) {
+  if (resources.length === 0) return null;
+
+  return (
+    <div className="space-y-2 border-t pt-3">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {title}
+      </p>
+      <ul className="space-y-2">
+        {resources.map((resource) => (
+          <li key={resource.milestoneId} className="flex items-start gap-1">
+            <FaaHelpLink resource={resource} className="text-xs" />
+            <FaaHelpTip resource={resource} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+interface FaaResourceLinksProps {
+  resources: FaaResource[];
+  title?: string;
+}
+
 interface FaaGuidancePanelProps {
   resources: FaaResource[];
 }

@@ -39,7 +39,10 @@ Read [docs/faa-integration.md](../../docs/faa-integration.md) first.
 - https://www.faa.gov/pilots
 - https://www.faa.gov/pilots/become
 - https://www.faa.gov/pilots/become/student_cert
-- https://www.faa.gov/pilots/medical_certification/
+- https://www.faa.gov/pilots/medical_certification/get
+- https://www.faa.gov/pilots/training
+- https://www.faa.gov/pilots/safety
+- https://www.faa.gov/pilots/rights
 
 ## Do not
 

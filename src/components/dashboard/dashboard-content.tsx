@@ -31,10 +31,12 @@ import {
   FAA_RESOURCES,
   getFaaResource,
   getRelevantFaaResources,
+  getSupplementalFaaResources,
 } from "@/lib/data/faa-resources";
 import {
   FaaGuidancePanel,
   FaaHelpTip,
+  FaaResourceLinks,
 } from "@/components/certification/faa-help-tip";
 import { FlightLogCard } from "@/components/dashboard/flight-log-card";
 import type { FlightMapEntry } from "@/lib/flights/map-data";
@@ -100,6 +102,10 @@ export function DashboardContent({
   const faaResources = getRelevantFaaResources(
     hourTotals.total,
     nextMilestone?.id ?? null
+  );
+  const supplementalFaaResources = getSupplementalFaaResources().filter(
+    (resource) =>
+      !faaResources.some((existing) => existing.milestoneId === resource.milestoneId)
   );
   const nextMilestoneResource = nextMilestone
     ? getFaaResource(nextMilestone.id)
@@ -378,6 +384,7 @@ export function DashboardContent({
               </p>
             )}
             <FaaGuidancePanel resources={faaResources} />
+            <FaaResourceLinks resources={supplementalFaaResources} />
           </CardContent>
         </Card>
       </div>

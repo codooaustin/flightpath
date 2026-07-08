@@ -286,10 +286,20 @@ export function LogbookContent({ flights, isStudent, homeAirport }: LogbookConte
           <p className="text-muted-foreground">
             Log flights and track your hour totals
           </p>
-          <FaaHelpLink
-            resource={FAA_RESOURCES.student_pilot}
-            className="mt-1 text-xs"
-          />
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+            <FaaHelpLink
+              resource={FAA_RESOURCES.student_pilot}
+              className="text-xs"
+            />
+            <FaaHelpLink
+              resource={FAA_RESOURCES.pilot_training}
+              className="text-xs"
+            />
+            <FaaHelpLink
+              resource={FAA_RESOURCES.pilot_safety}
+              className="text-xs"
+            />
+          </div>
         </div>
         {isStudent && (
           <Dialog

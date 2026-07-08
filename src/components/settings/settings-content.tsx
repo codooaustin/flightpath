@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateProfile, linkStudent, unlinkStudent } from "@/lib/actions/auth";
 import { SignOutButton } from "@/components/sign-out-button";
-import { FaaHelpTip } from "@/components/certification/faa-help-tip";
+import { FaaHelpTip, FaaResourceLinks } from "@/components/certification/faa-help-tip";
 import { FAA_RESOURCES } from "@/lib/data/faa-resources";
 import type { Profile, StudentParentLink } from "@/types/models";
 import { toast } from "sonner";
@@ -87,12 +87,12 @@ export function SettingsContent({
               <p className="text-xs text-muted-foreground">
                 Used to track FAA age requirements for certifications.{" "}
                 <a
-                  href={FAA_RESOURCES.student_pilot.url}
+                  href={FAA_RESOURCES.medical_exam.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sky-600 hover:underline"
                 >
-                  Student pilot requirements
+                  Medical certificate guide
                 </a>
               </p>
             </div>
@@ -126,6 +126,28 @@ export function SettingsContent({
               Save Profile
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Pilot Resources</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-sm text-muted-foreground">
+            Official FAA guides for training, medical certification, safety, and
+            your rights as a pilot.
+          </p>
+          <FaaResourceLinks
+            title="FAA links"
+            resources={[
+              FAA_RESOURCES.become_pilot,
+              FAA_RESOURCES.medical_exam,
+              FAA_RESOURCES.pilot_training,
+              FAA_RESOURCES.pilot_safety,
+              FAA_RESOURCES.pilot_rights,
+            ]}
+          />
         </CardContent>
       </Card>
 

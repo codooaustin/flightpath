@@ -113,13 +113,89 @@ export const FAA_RESOURCES: Record<string, FaaResource> = {
     summary:
       "Required before solo flight. Separate from your student pilot certificate.",
     details: [
-      "Schedule an exam with an Aviation Medical Examiner (AME).",
-      "Third-class medical is typical for student and private pilots.",
-      "Medical validity periods depend on your age and certificate class.",
+      "Complete FAA MedXPress (Form 8500-8) before your AME appointment.",
+      "Schedule with an Aviation Medical Examiner (AME) — third-class is typical for students.",
+      "Bring your MedXPress confirmation number and government-issued ID to the exam.",
+      "Complete the AME exam within 60 days of submitting MedXPress.",
       "Student pilot certificates issued after April 2016 do not expire.",
     ],
-    url: "https://www.faa.gov/pilots/medical_certification/",
-    urlLabel: "FAA: Medical Certification",
+    url: "https://www.faa.gov/pilots/medical_certification/get",
+    urlLabel: "FAA: How to Get a Medical Certificate",
+  },
+  medical_exam: {
+    milestoneId: "medical_exam",
+    title: "AME Examination Process",
+    summary:
+      "What to expect when you visit an Aviation Medical Examiner for your medical certificate.",
+    details: [
+      "Create a MedXPress account and submit your medical history before the visit.",
+      "Your AME will review vitals, vision, hearing, and perform a physical exam.",
+      "Bring documentation for any medical conditions or medications you report.",
+      "If documentation is complete, the AME may issue your certificate at the visit.",
+      "Deferred exams are reviewed by the FAA — you will receive a letter with next steps.",
+    ],
+    url: "https://www.faa.gov/pilots/medical_certification/get",
+    urlLabel: "FAA: AME Exam & MedXPress Guide",
+  },
+  become_pilot: {
+    milestoneId: "become_pilot",
+    title: "Become a Pilot",
+    summary:
+      "Start here to understand certificate types, training paths, and FAA requirements.",
+    details: [
+      "Choose what you want to fly — airplane, helicopter, glider, balloon, and more.",
+      "Certificate levels range from student pilot to airline transport pilot (ATP).",
+      "Requirements differ by aircraft type and certificate sought.",
+      "Covers student, recreational, and private pilot eligibility and training.",
+      "Contact your nearest FSDO if you need help beyond the online guides.",
+    ],
+    url: "https://www.faa.gov/pilots/become",
+    urlLabel: "FAA: Become a Pilot",
+  },
+  pilot_training: {
+    milestoneId: "pilot_training",
+    title: "Pilot Training",
+    summary:
+      "Official FAA training resources, study materials, and flight school guidance.",
+    details: [
+      "Review FAA handbooks, study tips, and sample knowledge test questions.",
+      "Use the Pilot School Locator to find Part 141 and other training providers.",
+      "WINGS program supports ongoing pilot proficiency beyond minimum requirements.",
+      "Includes takeoff safety, upset recovery, and air carrier training resources.",
+      "Student pilot training limits and CFI guidance are covered under certification topics.",
+    ],
+    url: "https://www.faa.gov/pilots/training",
+    urlLabel: "FAA: Pilot Training",
+  },
+  pilot_safety: {
+    milestoneId: "pilot_safety",
+    title: "Pilot Safety",
+    summary:
+      "Safety alerts, proficiency programs, and reporting resources for pilots.",
+    details: [
+      "Check NOTAMs, TFRs, and aircraft safety alerts before every flight.",
+      "FAA Safety Team (FAAST) and WINGS program support continuous proficiency.",
+      "Report bird strikes and safety issues through official FAA channels.",
+      "Review aeromedical safety brochures and pilot risk management materials.",
+      "Register 406 MHz emergency beacons as required for your operations.",
+    ],
+    url: "https://www.faa.gov/pilots/safety",
+    urlLabel: "FAA: Pilot Safety",
+  },
+  pilot_rights: {
+    milestoneId: "pilot_rights",
+    title: "Pilot's Bill of Rights",
+    summary:
+      "Your rights during FAA investigations and enforcement related to airman certificates.",
+    details: [
+      "Applies to investigations involving certificate approval, denial, suspension, modification, or revocation.",
+      "You may be entitled to obtain relevant air traffic data during an investigation.",
+      "Requests for contractor-held ATC data go through the FAA investigator on your case.",
+      "Medical applicants also acknowledge the Medical Examination Bill of Rights via MedXPress.",
+      "Read the official FAA guidance for current request procedures.",
+    ],
+    url: "https://www.faa.gov/pilots/rights",
+    urlLabel: "FAA: Pilot's Bill of Rights",
   },
   flight_logbook: {
     milestoneId: "flight_logbook",
@@ -174,6 +250,12 @@ export function getRelevantFaaResources(
   if (totalHours < 30) {
     add("student_pilot");
     add("medical_certificate");
+    add("medical_exam");
+    add("become_pilot");
+    add("pilot_training");
+  } else if (totalHours < 100) {
+    add("become_pilot");
+    add("pilot_training");
   }
 
   if (nextMilestoneId) {
@@ -181,6 +263,15 @@ export function getRelevantFaaResources(
   }
 
   return resources;
+}
+
+export function getSupplementalFaaResources(): FaaResource[] {
+  return [
+    FAA_RESOURCES.become_pilot,
+    FAA_RESOURCES.pilot_training,
+    FAA_RESOURCES.pilot_safety,
+    FAA_RESOURCES.pilot_rights,
+  ];
 }
 
 export const LOGBOOK_FIELD_HELP: Record<

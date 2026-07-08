@@ -43,7 +43,11 @@ Flight Path surfaces FAA pilot certification guidance in the app. It does **not*
 | Pilots hub | https://www.faa.gov/pilots |
 | Become a pilot | https://www.faa.gov/pilots/become |
 | Student pilot certificate | https://www.faa.gov/pilots/become/student_cert |
-| Medical certification | https://www.faa.gov/pilots/medical_certification/ |
+| Medical certification (overview) | https://www.faa.gov/pilots/medical_certification |
+| How to get a medical certificate | https://www.faa.gov/pilots/medical_certification/get |
+| Pilot training | https://www.faa.gov/pilots/training |
+| Pilot safety | https://www.faa.gov/pilots/safety |
+| Pilot's Bill of Rights | https://www.faa.gov/pilots/rights |
 | Part 61 (pilot certification) | https://www.ecfr.gov/current/title-14/chapter-I/subchapter-D/part-61 |
 
 Use milestone-specific pages when they exist (e.g. student cert). Use `/pilots/become` or `/pilots` as fallback for higher certificates.
