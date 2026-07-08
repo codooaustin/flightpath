@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { FlightProgress } from "@/components/dashboard/flight-progress";
 import { Badge } from "@/components/ui/badge";
 import { Target, Calendar, DollarSign, BookOpen, Plane, Award } from "lucide-react";
 import {
@@ -138,7 +138,7 @@ export function DashboardContent({
               </div>
               <Badge variant="secondary">{progress.percentage}% complete</Badge>
             </div>
-            <Progress value={progress.percentage} className="h-2" />
+            <FlightProgress value={progress.percentage} />
             <p className="text-sm text-muted-foreground">
               {progress.completed} of {progress.total} missions landed
             </p>
@@ -296,7 +296,7 @@ export function DashboardContent({
                     {formatHours(hourTotals.total)} / {milestoneTarget} hrs
                   </span>
                 </div>
-                <Progress value={milestoneProgress} className="h-2" />
+                <FlightProgress value={milestoneProgress} />
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -376,9 +376,11 @@ export function DashboardContent({
                           {instrumentProgress.instrument.target}
                         </span>
                       </div>
-                      <Progress
+                      <FlightProgress
                         value={instrumentProgress.instrument.percent}
-                        className="h-1.5"
+                        trackClassName="h-1.5"
+                        iconClassName="h-3 w-3"
+                        className="pt-3"
                       />
                     </div>
                     <div className="space-y-1">
@@ -389,9 +391,11 @@ export function DashboardContent({
                           / {instrumentProgress.crossCountryPic.target}
                         </span>
                       </div>
-                      <Progress
+                      <FlightProgress
                         value={instrumentProgress.crossCountryPic.percent}
-                        className="h-1.5"
+                        trackClassName="h-1.5"
+                        iconClassName="h-3 w-3"
+                        className="pt-3"
                       />
                     </div>
                   </div>
