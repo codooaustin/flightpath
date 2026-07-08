@@ -3,11 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { FlightProgress } from "@/components/dashboard/flight-progress";
 import { FaaHelpTip } from "@/components/certification/faa-help-tip";
+import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
 import type { FlightHourTotals } from "@/lib/calculations/flight-hours";
 import { formatHours } from "@/lib/calculations/flight-hours";
 import { formatAgeEligibility } from "@/lib/calculations/certification";
-import { getStageTrainingDisplay } from "@/lib/data/stage-guidance";
-import type { Stage } from "@/types/models";
+import {
+  getStageCertificateMissionStatus,
+  getStageTrainingDisplay,
+} from "@/lib/data/stage-guidance";
+import type { Mission, Stage, UserMission } from "@/types/models";
 import { Award } from "lucide-react";
 
 interface DashboardTrainingProgressProps {
@@ -15,6 +19,7 @@ interface DashboardTrainingProgressProps {
   hourTotals: FlightHourTotals;
   age: number | null;
   birthDate: string | null;
+  userMissions: (UserMission & { mission?: Mission })[];
 }
 
 export function DashboardTrainingProgress({
@@ -22,14 +27,18 @@ export function DashboardTrainingProgress({
   hourTotals,
   age,
   birthDate,
+  userMissions,
 }: DashboardTrainingProgressProps) {
   const display = currentStage
     ? getStageTrainingDisplay(currentStage.name, hourTotals)
     : null;
-  const primaryRequirement = display?.primaryRequirement ?? null;
+  const certificateMission = currentStage
+    ? getStageCertificateMissionStatus(currentStage.name, userMissions)
+    : null;
+  const hourAccrual = display?.hourAccrual ?? null;
   const hoursRemaining =
-    primaryRequirement != null
-      ? Math.max(0, primaryRequirement.target - primaryRequirement.current)
+    hourAccrual != null
+      ? Math.max(0, hourAccrual.primary.target - hourAccrual.primary.current)
       : null;
 
   return (
@@ -50,72 +59,126 @@ export function DashboardTrainingProgress({
       </CardHeader>
 
       <CardContent className="flex flex-1 flex-col gap-4">
-        {display ? (
+        {display?.certificate && (
           <section className="space-y-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {display.certificate.sectionTitle}
+            </p>
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {display.sectionTitle}
-              </p>
-              <div className="mt-1 flex items-center gap-1">
-                <p className="font-semibold">{display.headline}</p>
-                {display.faaResource && (
-                  <FaaHelpTip resource={display.faaResource} />
+              <div className="flex items-center gap-1">
+                <p className="font-semibold">{display.certificate.name}</p>
+                {display.certificate.faaResource && (
+                  <FaaHelpTip resource={display.certificate.faaResource} />
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
-                {display.description}
+                {display.certificate.description}
               </p>
-              {display.contextualNote && display.mode !== "certificate" && (
+            </div>
+            {certificateMission ? (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <MissionStatusBadge status={certificateMission.status} />
+                {certificateMission.status === "completed" ? (
+                  <p className="text-xs text-muted-foreground">
+                    Marked complete on{" "}
+                    <Link
+                      href="/missions"
+                      className="text-sky-600 hover:underline"
+                    >
+                      Missions
+                    </Link>
+                  </p>
+                ) : (
+                  <Link
+                    href="/missions"
+                    className="text-xs font-medium text-sky-600 hover:underline"
+                  >
+                    Complete mission →
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Track this on the{" "}
+                <Link href="/missions" className="text-sky-600 hover:underline">
+                  Missions
+                </Link>{" "}
+                page when you receive your certificate.
+              </p>
+            )}
+          </section>
+        )}
+
+        {hourAccrual ? (
+          <section
+            className={
+              display?.certificate ? "space-y-3 border-t pt-4" : "space-y-3"
+            }
+          >
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {hourAccrual.sectionTitle}
+              </p>
+              {!display?.certificate && (
+                <div className="mt-1 flex items-center gap-1">
+                  <p className="font-semibold">{display?.milestone.name}</p>
+                </div>
+              )}
+              {hourAccrual.note && !display?.certificate && (
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {display.contextualNote}
+                  {hourAccrual.note}
                 </p>
               )}
             </div>
 
-            {primaryRequirement ? (
-              <div className="space-y-2">
-                <div className="flex items-end justify-between gap-2">
-                  <div>
-                    <p className="text-2xl font-bold">
-                      {formatHours(primaryRequirement.current)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {display.mode === "certificate"
-                        ? "Hours logged toward early training"
-                        : primaryRequirement.label}
-                    </p>
-                  </div>
-                  <p className="text-right text-sm font-medium">
-                    {formatHours(primaryRequirement.current)} /{" "}
-                    {formatHours(primaryRequirement.target)} hrs
+            <div className="space-y-2">
+              <div className="flex items-end justify-between gap-2">
+                <div>
+                  <p className="text-2xl font-bold">
+                    {formatHours(hourAccrual.primary.current)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {hourAccrual.primary.label}
                   </p>
                 </div>
-                <FlightProgress value={primaryRequirement.percent} />
-                {display.mode === "certificate" && display.contextualNote ? (
-                  <p className="text-xs text-muted-foreground">
-                    {display.contextualNote}
-                  </p>
-                ) : (
-                  hoursRemaining != null &&
-                  hoursRemaining > 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      {formatHours(hoursRemaining)} remaining to target
-                    </p>
-                  )
-                )}
+                <p className="text-right text-sm font-medium">
+                  {formatHours(hourAccrual.primary.current)} /{" "}
+                  {formatHours(hourAccrual.primary.target)} hrs
+                </p>
               </div>
-            ) : (
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">
-                  {formatHours(display.hoursLogged)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Total hours logged
-                </p>
+              <FlightProgress value={hourAccrual.primary.percent} />
+              {hourAccrual.note && display?.certificate ? (
+                <p className="text-xs text-muted-foreground">{hourAccrual.note}</p>
+              ) : (
+                hoursRemaining != null &&
+                hoursRemaining > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {formatHours(hoursRemaining)} remaining to target
+                  </p>
+                )
+              )}
+            </div>
+
+            {hourAccrual.additional.length > 0 && (
+              <div className="space-y-3 border-t pt-3">
+                {hourAccrual.additional.map((requirement) => (
+                  <div key={requirement.label} className="space-y-1.5">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {requirement.label}
+                      </span>
+                      <span className="font-medium">
+                        {formatHours(requirement.current)} /{" "}
+                        {formatHours(requirement.target)} hrs
+                      </span>
+                    </div>
+                    <Progress value={requirement.percent} className="h-1.5" />
+                  </div>
+                ))}
               </div>
             )}
           </section>
-        ) : (
+        ) : !display ? (
           <section className="space-y-2">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Training
@@ -128,29 +191,7 @@ export function DashboardTrainingProgress({
               guidance.
             </p>
           </section>
-        )}
-
-        {display && display.additionalRequirements.length > 0 && (
-          <section className="space-y-3 border-t pt-3">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Additional requirements
-            </p>
-            {display.additionalRequirements.map((requirement) => (
-              <div key={requirement.label} className="space-y-1.5">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    {requirement.label}
-                  </span>
-                  <span className="font-medium">
-                    {formatHours(requirement.current)} /{" "}
-                    {formatHours(requirement.target)} hrs
-                  </span>
-                </div>
-                <Progress value={requirement.percent} className="h-1.5" />
-              </div>
-            ))}
-          </section>
-        )}
+        ) : null}
 
         <section className="mt-auto space-y-1 border-t pt-3 text-sm">
           {birthDate ? (

@@ -42,48 +42,65 @@ export function StageHourRequirementsCard({
           </p>
         ) : (
           <>
-            <div className="space-y-1">
-              <div className="flex items-center gap-1">
-                <p className="font-medium">{display.headline}</p>
-                {display.faaResource && (
-                  <FaaHelpTip resource={display.faaResource} />
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {display.description}
-              </p>
-              {display.contextualNote && display.mode !== "certificate" && (
-                <p className="text-xs text-muted-foreground">
-                  {display.contextualNote}
+            {display.certificate && (
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {display.certificate.sectionTitle}
                 </p>
-              )}
-            </div>
+                <div className="flex items-center gap-1">
+                  <p className="font-medium">{display.certificate.name}</p>
+                  {display.certificate.faaResource && (
+                    <FaaHelpTip resource={display.certificate.faaResource} />
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {display.certificate.description}
+                </p>
+              </div>
+            )}
 
-            {display.primaryRequirement ? (
-              <div className="space-y-3">
+            {display.hourAccrual && (
+              <div
+                className={
+                  display.certificate ? "space-y-3 border-t pt-4" : "space-y-3"
+                }
+              >
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {display.hourAccrual.sectionTitle}
+                </p>
+                {!display.certificate && (
+                  <div className="flex items-center gap-1">
+                    <p className="font-medium">{display.milestone.name}</p>
+                  </div>
+                )}
+                {!display.certificate && display.hourAccrual.note && (
+                  <p className="text-xs text-muted-foreground">
+                    {display.hourAccrual.note}
+                  </p>
+                )}
+
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">
-                      {display.mode === "certificate"
-                        ? "Hours logged toward early training"
-                        : display.primaryRequirement.label}
+                      {display.hourAccrual.primary.label}
                     </span>
                     <span className="font-medium">
-                      {formatHours(display.primaryRequirement.current)} /{" "}
-                      {formatHours(display.primaryRequirement.target)} hrs
+                      {formatHours(display.hourAccrual.primary.current)} /{" "}
+                      {formatHours(display.hourAccrual.primary.target)} hrs
                     </span>
                   </div>
                   <Progress
-                    value={display.primaryRequirement.percent}
+                    value={display.hourAccrual.primary.percent}
                     className="h-1.5"
                   />
-                  {display.mode === "certificate" && display.contextualNote && (
+                  {display.certificate && display.hourAccrual.note && (
                     <p className="text-xs text-muted-foreground">
-                      {display.contextualNote}
+                      {display.hourAccrual.note}
                     </p>
                   )}
                 </div>
-                {display.additionalRequirements.map((requirement) => (
+
+                {display.hourAccrual.additional.map((requirement) => (
                   <div key={requirement.label} className="space-y-1.5">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">
@@ -97,15 +114,6 @@ export function StageHourRequirementsCard({
                     <Progress value={requirement.percent} className="h-1.5" />
                   </div>
                 ))}
-              </div>
-            ) : (
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">
-                  {formatHours(display.hoursLogged)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Total hours logged
-                </p>
               </div>
             )}
 

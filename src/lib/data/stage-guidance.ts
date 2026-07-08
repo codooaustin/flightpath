@@ -12,6 +12,7 @@ import {
   getFaaResource,
   type FaaResource,
 } from "@/lib/data/faa-resources";
+import type { MissionStatus } from "@/types/models";
 
 const STAGE_MILESTONE_IDS: Record<string, string> = {
   Explorer: "student_pilot",
@@ -61,16 +62,47 @@ export interface StageHourGuidance {
 }
 
 export interface StageTrainingDisplay {
-  sectionTitle: string;
-  headline: string;
-  description: string;
-  contextualNote?: string;
-  faaResource: FaaResource | null;
   milestone: PilotMilestone;
-  mode: "certificate" | "hours";
-  hoursLogged: number;
-  primaryRequirement: HourRequirementRow | null;
-  additionalRequirements: HourRequirementRow[];
+  certificate: CertificateBlock | null;
+  hourAccrual: HourAccrualBlock | null;
+}
+
+export interface CertificateBlock {
+  sectionTitle: string;
+  name: string;
+  description: string;
+  faaResource: FaaResource | null;
+  relatedMissionTitle: string;
+}
+
+export interface HourAccrualBlock {
+  sectionTitle: string;
+  primary: HourRequirementRow;
+  additional: HourRequirementRow[];
+  note?: string;
+}
+
+const STAGE_CERTIFICATE_MISSIONS: Record<string, string> = {
+  "Student Aviator": "Obtain Student Pilot Certificate",
+};
+
+export function getStageCertificateMissionStatus(
+  stageName: string,
+  userMissions: { id: string; status: string; mission?: { title?: string } }[]
+) {
+  const missionTitle = STAGE_CERTIFICATE_MISSIONS[stageName];
+  if (!missionTitle) return null;
+
+  const userMission = userMissions.find(
+    (entry) => entry.mission?.title === missionTitle
+  );
+  if (!userMission) return null;
+
+  return {
+    userMissionId: userMission.id,
+    status: userMission.status as MissionStatus,
+    missionTitle,
+  };
 }
 
 function getSoloTypicalNote(): string {
@@ -97,41 +129,47 @@ export function getStageTrainingDisplay(
         (requirement) => requirement.label === "Typical training hours"
       ) ?? guidance.requirements[0] ?? null;
 
+    if (!hourRequirement) return null;
+
     return {
-      sectionTitle: "Stage requirements",
-      headline: guidance.milestone.name,
-      description:
-        guidance.faaResource?.summary ??
-        "Required before solo flight. You can start lessons and log hours without it.",
-      contextualNote: getSoloTypicalNote(),
-      faaResource: guidance.faaResource,
       milestone: guidance.milestone,
-      mode: "certificate",
-      hoursLogged: totals.total,
-      primaryRequirement: hourRequirement,
-      additionalRequirements: [],
+      certificate: {
+        sectionTitle: "Certification",
+        name: guidance.milestone.name,
+        description:
+          guidance.faaResource?.summary ??
+          "Required before solo flight. You can start lessons and log hours without it.",
+        faaResource: guidance.faaResource,
+        relatedMissionTitle: STAGE_CERTIFICATE_MISSIONS[stageName] ?? "",
+      },
+      hourAccrual: {
+        sectionTitle: "Hour accrual",
+        primary: hourRequirement,
+        additional: [],
+        note: getSoloTypicalNote(),
+      },
     };
   }
 
   const typicalRangeLabel = formatTypicalHourRange(guidance.milestone);
+  const primary = guidance.requirements[0];
+  if (!primary) return null;
 
   return {
-    sectionTitle: "Hour goal",
-    headline: guidance.milestone.name,
-    description: guidance.milestone.description,
-    contextualNote: typicalRangeLabel
-      ? `Typical training: ${typicalRangeLabel}${
-          guidance.faaMinimum != null && guidance.faaMinimum > 0
-            ? ` · FAA minimum: ${guidance.faaMinimum} hrs`
-            : ""
-        }`
-      : undefined,
-    faaResource: guidance.faaResource,
     milestone: guidance.milestone,
-    mode: "hours",
-    hoursLogged: totals.total,
-    primaryRequirement: guidance.requirements[0] ?? null,
-    additionalRequirements: guidance.requirements.slice(1),
+    certificate: null,
+    hourAccrual: {
+      sectionTitle: "Hour goal",
+      primary,
+      additional: guidance.requirements.slice(1),
+      note: typicalRangeLabel
+        ? `Typical training: ${typicalRangeLabel}${
+            guidance.faaMinimum != null && guidance.faaMinimum > 0
+              ? ` · FAA minimum: ${guidance.faaMinimum} hrs`
+              : ""
+          }`
+        : undefined,
+    },
   };
 }
 
