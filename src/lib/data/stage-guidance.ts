@@ -4,6 +4,7 @@ import {
   getMilestoneHourTarget,
   getMilestoneProgress,
   getPilotMilestones,
+  formatTypicalHourRange,
   type PilotMilestone,
 } from "@/lib/calculations/certification";
 import {
@@ -57,6 +58,76 @@ export interface StageHourGuidance {
   typicalRange: number[];
   requirements: HourRequirementRow[];
   faaResource: FaaResource | null;
+}
+
+export interface StageTrainingDisplay {
+  sectionTitle: string;
+  headline: string;
+  description: string;
+  contextualNote?: string;
+  faaResource: FaaResource | null;
+  milestone: PilotMilestone;
+  mode: "certificate" | "hours";
+  hoursLogged: number;
+  primaryRequirement: HourRequirementRow | null;
+  additionalRequirements: HourRequirementRow[];
+}
+
+function getSoloTypicalNote(): string {
+  const firstSolo = getPilotMilestones().find(
+    (milestone) => milestone.id === "first_solo"
+  );
+  if (firstSolo && firstSolo.typical_hours_range.length >= 2) {
+    const [low, high] = firstSolo.typical_hours_range;
+    return `Most students solo around ${low}–${high} flight hours — timing varies widely.`;
+  }
+  return "You can log flight hours from your first lesson; solo timing varies by student.";
+}
+
+export function getStageTrainingDisplay(
+  stageName: string,
+  totals: FlightHourTotals
+): StageTrainingDisplay | null {
+  const guidance = getStageHourGuidance(stageName, totals);
+  if (!guidance) return null;
+
+  if (guidance.milestone.id === "student_pilot") {
+    return {
+      sectionTitle: "Stage requirements",
+      headline: guidance.milestone.name,
+      description:
+        guidance.faaResource?.summary ??
+        "Required before solo flight. You can start lessons and log hours without it.",
+      contextualNote: getSoloTypicalNote(),
+      faaResource: guidance.faaResource,
+      milestone: guidance.milestone,
+      mode: "certificate",
+      hoursLogged: totals.total,
+      primaryRequirement: null,
+      additionalRequirements: [],
+    };
+  }
+
+  const typicalRangeLabel = formatTypicalHourRange(guidance.milestone);
+
+  return {
+    sectionTitle: "Hour goal",
+    headline: guidance.milestone.name,
+    description: guidance.milestone.description,
+    contextualNote: typicalRangeLabel
+      ? `Typical training: ${typicalRangeLabel}${
+          guidance.faaMinimum != null && guidance.faaMinimum > 0
+            ? ` · FAA minimum: ${guidance.faaMinimum} hrs`
+            : ""
+        }`
+      : undefined,
+    faaResource: guidance.faaResource,
+    milestone: guidance.milestone,
+    mode: "hours",
+    hoursLogged: totals.total,
+    primaryRequirement: guidance.requirements[0] ?? null,
+    additionalRequirements: guidance.requirements.slice(1),
+  };
 }
 
 function resolveResources(ids: string[]): FaaResource[] {

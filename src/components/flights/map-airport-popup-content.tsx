@@ -1,4 +1,5 @@
 import type { FlightMapPoint } from "@/lib/flights/map-data";
+import { FLIGHT_STOP_SHORT } from "@/lib/flights/route";
 import { getStopDisplay, parseAirportName } from "@/lib/flights/stop-display";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +14,7 @@ export function MapAirportPopupContent({
   index,
   total,
 }: MapAirportPopupContentProps) {
-  const { icon: Icon, label, iconClassName, badgeClassName } = getStopDisplay(
+  const { icon: Icon, iconClassName, badgeClassName } = getStopDisplay(
     point.stop_type,
     index,
     total
@@ -23,42 +24,41 @@ export function MapAirportPopupContent({
     : { city: null, airport: null };
 
   return (
-    <div className="w-[168px] p-2">
-      <div className="flex items-start gap-2">
+    <div className="max-w-[148px] py-0.5 pl-1.5 pr-4">
+      <div className="flex items-center gap-1">
         <span
           className={cn(
-            "flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
+            "flex h-4 w-4 shrink-0 items-center justify-center rounded-full",
             iconClassName
           )}
         >
-          <Icon className="h-3 w-3" aria-hidden />
+          <Icon className="h-2.5 w-2.5" aria-hidden />
         </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-1.5">
-            <p className="font-mono text-sm font-bold leading-none tracking-wide">
-              {point.code}
-            </p>
-            <span
-              className={cn(
-                "shrink-0 rounded-full border px-1.5 py-px text-[9px] font-medium uppercase tracking-wide",
-                badgeClassName
-              )}
-            >
-              {label}
-            </span>
-          </div>
-          {city && (
-            <p className="mt-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-              {city}
-            </p>
+        <p className="font-mono text-xs font-bold leading-none tracking-wide">
+          {point.code}
+        </p>
+        <span
+          className={cn(
+            "shrink-0 rounded border px-1 py-px text-[8px] font-medium uppercase leading-none tracking-wide",
+            badgeClassName
           )}
-          {airport && (
-            <p className="mt-0.5 text-[11px] font-medium leading-tight text-foreground">
-              {airport}
-            </p>
-          )}
-        </div>
+        >
+          {FLIGHT_STOP_SHORT[point.stop_type]}
+        </span>
       </div>
+      {(city || airport) && (
+        <p className="mt-0.5 truncate pl-5 text-[10px] leading-tight">
+          {city && (
+            <span className="font-medium uppercase text-muted-foreground">
+              {city}
+            </span>
+          )}
+          {city && airport && (
+            <span className="text-muted-foreground"> · </span>
+          )}
+          {airport && <span className="text-foreground">{airport}</span>}
+        </p>
+      )}
     </div>
   );
 }

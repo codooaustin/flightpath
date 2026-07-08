@@ -7,7 +7,7 @@ import { FaaHelpTip } from "@/components/certification/faa-help-tip";
 import { StageResourceLinks } from "@/components/missions/stage-resource-links";
 import type { FlightHourTotals } from "@/lib/calculations/flight-hours";
 import { formatHours } from "@/lib/calculations/flight-hours";
-import { getStageHourGuidance } from "@/lib/data/stage-guidance";
+import { getStageTrainingDisplay } from "@/lib/data/stage-guidance";
 import type { Stage } from "@/types/models";
 import { Award } from "lucide-react";
 
@@ -20,8 +20,8 @@ export function StageHourRequirementsCard({
   currentStage,
   hourTotals,
 }: StageHourRequirementsCardProps) {
-  const guidance = currentStage
-    ? getStageHourGuidance(currentStage.name, hourTotals)
+  const display = currentStage
+    ? getStageTrainingDisplay(currentStage.name, hourTotals)
     : null;
 
   return (
@@ -29,53 +29,80 @@ export function StageHourRequirementsCard({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Award className="h-5 w-5 text-sky-600" />
-          Stage Hour Requirements
+          Stage Requirements
         </CardTitle>
         {currentStage && (
           <p className="text-sm text-muted-foreground">{currentStage.name}</p>
         )}
       </CardHeader>
       <CardContent className="space-y-4">
-        {!currentStage || !guidance ? (
+        {!currentStage || !display ? (
           <p className="text-sm text-muted-foreground">
-            Complete roadmap missions to unlock stage-specific hour guidance.
+            Complete roadmap missions to unlock stage-specific guidance.
           </p>
         ) : (
           <>
             <div className="space-y-1">
               <div className="flex items-center gap-1">
-                <p className="font-medium">{guidance.milestone.name}</p>
-                {guidance.faaResource && (
-                  <FaaHelpTip resource={guidance.faaResource} />
+                <p className="font-medium">{display.headline}</p>
+                {display.faaResource && (
+                  <FaaHelpTip resource={display.faaResource} />
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
-                {guidance.milestone.description}
+                {display.description}
               </p>
-              {guidance.typicalRange.length >= 2 && (
+              {display.contextualNote && (
                 <p className="text-xs text-muted-foreground">
-                  Typical range: {guidance.typicalRange[0]}–
-                  {guidance.typicalRange[1]} hrs
+                  {display.contextualNote}
                 </p>
               )}
             </div>
 
-            <div className="space-y-3">
-              {guidance.requirements.map((requirement) => (
-                <div key={requirement.label} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {requirement.label}
-                    </span>
-                    <span className="font-medium">
-                      {formatHours(requirement.current)} /{" "}
-                      {formatHours(requirement.target)} hrs
-                    </span>
+            {display.mode === "certificate" ? (
+              <div className="space-y-1">
+                <p className="text-2xl font-bold">
+                  {formatHours(display.hoursLogged)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Total hours logged
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {display.primaryRequirement && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {display.primaryRequirement.label}
+                      </span>
+                      <span className="font-medium">
+                        {formatHours(display.primaryRequirement.current)} /{" "}
+                        {formatHours(display.primaryRequirement.target)} hrs
+                      </span>
+                    </div>
+                    <Progress
+                      value={display.primaryRequirement.percent}
+                      className="h-1.5"
+                    />
                   </div>
-                  <Progress value={requirement.percent} className="h-1.5" />
-                </div>
-              ))}
-            </div>
+                )}
+                {display.additionalRequirements.map((requirement) => (
+                  <div key={requirement.label} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {requirement.label}
+                      </span>
+                      <span className="font-medium">
+                        {formatHours(requirement.current)} /{" "}
+                        {formatHours(requirement.target)} hrs
+                      </span>
+                    </div>
+                    <Progress value={requirement.percent} className="h-1.5" />
+                  </div>
+                ))}
+              </div>
+            )}
 
             <StageResourceLinks stageName={currentStage.name} />
 

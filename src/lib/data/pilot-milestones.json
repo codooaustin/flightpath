@@ -10,7 +10,7 @@
       "faa_minimum_hours": 0,
       "typical_hours_range": [0, 20],
       "track_progress": false,
-      "description": "Required before solo flight."
+      "description": "Paperwork required before solo flight — not required to begin lessons or log hours."
     },
     {
       "id": "first_solo",

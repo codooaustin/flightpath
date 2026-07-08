@@ -134,30 +134,32 @@
   }
 
   .leaflet-popup.flight-map-popup .leaflet-popup-content-wrapper {
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     border: 1px solid var(--border);
     background: var(--popover);
     color: var(--popover-foreground);
-    box-shadow:
-      0 4px 6px -1px rgb(0 0 0 / 0.1),
-      0 2px 4px -2px rgb(0 0 0 / 0.1);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.12);
     padding: 0;
   }
 
   .leaflet-popup.flight-map-popup .leaflet-popup-content {
-    margin: 0;
-    line-height: 1.4;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    line-height: 1.2;
   }
 
   .leaflet-popup.flight-map-popup .leaflet-popup-close-button {
-    top: 4px;
-    right: 4px;
-    width: 18px;
-    height: 18px;
-    font-size: 14px;
-    line-height: 16px;
+    top: 2px;
+    right: 2px;
+    width: 14px;
+    height: 14px;
+    font-size: 12px;
+    line-height: 12px;
     color: var(--muted-foreground);
     border-radius: var(--radius-sm);
+    padding: 0;
   }
 
   .leaflet-popup.flight-map-popup .leaflet-popup-close-button:hover {

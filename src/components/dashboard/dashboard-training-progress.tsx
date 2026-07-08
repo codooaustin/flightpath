@@ -5,11 +5,8 @@ import { FlightProgress } from "@/components/dashboard/flight-progress";
 import { FaaHelpTip } from "@/components/certification/faa-help-tip";
 import type { FlightHourTotals } from "@/lib/calculations/flight-hours";
 import { formatHours } from "@/lib/calculations/flight-hours";
-import {
-  formatAgeEligibility,
-  formatTypicalHourRange,
-} from "@/lib/calculations/certification";
-import { getStageHourGuidance } from "@/lib/data/stage-guidance";
+import { formatAgeEligibility } from "@/lib/calculations/certification";
+import { getStageTrainingDisplay } from "@/lib/data/stage-guidance";
 import type { Stage } from "@/types/models";
 import { Award } from "lucide-react";
 
@@ -26,14 +23,10 @@ export function DashboardTrainingProgress({
   age,
   birthDate,
 }: DashboardTrainingProgressProps) {
-  const guidance = currentStage
-    ? getStageHourGuidance(currentStage.name, hourTotals)
+  const display = currentStage
+    ? getStageTrainingDisplay(currentStage.name, hourTotals)
     : null;
-  const primaryRequirement = guidance?.requirements[0] ?? null;
-  const additionalRequirements = guidance?.requirements.slice(1) ?? [];
-  const typicalRangeLabel = guidance?.milestone
-    ? formatTypicalHourRange(guidance.milestone)
-    : null;
+  const primaryRequirement = display?.primaryRequirement ?? null;
   const hoursRemaining =
     primaryRequirement != null
       ? Math.max(0, primaryRequirement.target - primaryRequirement.current)
@@ -57,75 +50,83 @@ export function DashboardTrainingProgress({
       </CardHeader>
 
       <CardContent className="flex flex-1 flex-col gap-4">
-        {guidance && primaryRequirement ? (
+        {display ? (
           <section className="space-y-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Hour goal
+                {display.sectionTitle}
               </p>
               <div className="mt-1 flex items-center gap-1">
-                <p className="font-semibold">{guidance.milestone.name}</p>
-                {guidance.faaResource && (
-                  <FaaHelpTip resource={guidance.faaResource} />
+                <p className="font-semibold">{display.headline}</p>
+                {display.faaResource && (
+                  <FaaHelpTip resource={display.faaResource} />
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
-                {guidance.milestone.description}
+                {display.description}
               </p>
-              {typicalRangeLabel && (
+              {display.contextualNote && (
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Typical training: {typicalRangeLabel}
-                  {guidance.faaMinimum != null && guidance.faaMinimum > 0
-                    ? ` · FAA minimum: ${guidance.faaMinimum} hrs`
-                    : ""}
+                  {display.contextualNote}
                 </p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-end justify-between gap-2">
-                <div>
-                  <p className="text-2xl font-bold">
-                    {formatHours(primaryRequirement.current)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {primaryRequirement.label}
-                  </p>
-                </div>
-                <p className="text-right text-sm font-medium">
-                  {formatHours(primaryRequirement.current)} /{" "}
-                  {formatHours(primaryRequirement.target)} hrs
+            {display.mode === "certificate" ? (
+              <div className="space-y-1">
+                <p className="text-2xl font-bold">
+                  {formatHours(display.hoursLogged)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Total hours logged — keep building time toward solo readiness
                 </p>
               </div>
-              <FlightProgress value={primaryRequirement.percent} />
-              {hoursRemaining != null && hoursRemaining > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  {formatHours(hoursRemaining)} remaining to target
-                </p>
-              )}
-            </div>
+            ) : primaryRequirement ? (
+              <div className="space-y-2">
+                <div className="flex items-end justify-between gap-2">
+                  <div>
+                    <p className="text-2xl font-bold">
+                      {formatHours(primaryRequirement.current)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {primaryRequirement.label}
+                    </p>
+                  </div>
+                  <p className="text-right text-sm font-medium">
+                    {formatHours(primaryRequirement.current)} /{" "}
+                    {formatHours(primaryRequirement.target)} hrs
+                  </p>
+                </div>
+                <FlightProgress value={primaryRequirement.percent} />
+                {hoursRemaining != null && hoursRemaining > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {formatHours(hoursRemaining)} remaining to target
+                  </p>
+                )}
+              </div>
+            ) : null}
           </section>
         ) : (
           <section className="space-y-2">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Hour goal
+              Training
             </p>
             <p className="text-2xl font-bold">
               {formatHours(hourTotals.total)}
             </p>
             <p className="text-sm text-muted-foreground">
-              Total logged hours. Advance on the roadmap to unlock stage hour
-              targets.
+              Total logged hours. Advance on the roadmap to unlock stage
+              guidance.
             </p>
           </section>
         )}
 
-        {additionalRequirements.length > 0 && (
+        {display && display.additionalRequirements.length > 0 && (
           <section className="space-y-3 border-t pt-3">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Additional requirements
             </p>
-            {additionalRequirements.map((requirement) => (
+            {display.additionalRequirements.map((requirement) => (
               <div key={requirement.label} className="space-y-1.5">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
@@ -157,9 +158,9 @@ export function DashboardTrainingProgress({
               to track age requirements.
             </p>
           )}
-          {guidance?.milestone && (
+          {display?.milestone && (
             <p className="text-muted-foreground">
-              {formatAgeEligibility(birthDate, guidance.milestone)}
+              {formatAgeEligibility(birthDate, display.milestone)}
             </p>
           )}
         </section>
