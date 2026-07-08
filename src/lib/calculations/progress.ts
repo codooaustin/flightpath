@@ -1,4 +1,5 @@
 import type { Mission, Stage, UserMission } from "@/types/models";
+import { isMissionBlockedByAge } from "@/lib/missions/mission-eligibility";
 
 export function calculateProgress(userMissions: UserMission[]) {
   const total = userMissions.length;
@@ -48,6 +49,39 @@ export function getStageStatus(
   if (stage.order_number < currentStage.order_number) return "completed";
   if (stage.order_number === currentStage.order_number) return "current";
   return "locked";
+}
+
+export function getNextActionableMission(
+  userMissions: (UserMission & { mission?: Mission })[],
+  missions: Mission[],
+  birthDate: string | null | undefined,
+  stages: Stage[]
+): (UserMission & { mission?: Mission }) | null {
+  const inProgress = userMissions.find((um) => um.status === "in_progress");
+  if (inProgress?.mission) return inProgress;
+
+  const stageOrder = new Map(stages.map((stage) => [stage.id, stage.order_number]));
+
+  const available = userMissions
+    .filter((um) => {
+      if (um.status !== "available" || !um.mission) return false;
+      return !isMissionBlockedByAge(
+        birthDate,
+        um.mission,
+        missions,
+        userMissions
+      );
+    })
+    .sort((left, right) => {
+      const leftStageOrder = stageOrder.get(left.mission!.stage_id) ?? 0;
+      const rightStageOrder = stageOrder.get(right.mission!.stage_id) ?? 0;
+      if (leftStageOrder !== rightStageOrder) {
+        return leftStageOrder - rightStageOrder;
+      }
+      return (left.mission!.order_number ?? 0) - (right.mission!.order_number ?? 0);
+    });
+
+  return available[0] ?? null;
 }
 
 export function getNextMission(

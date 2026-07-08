@@ -16,7 +16,7 @@ import type { FaaResource } from "@/lib/data/faa-resources";
 import { cn } from "@/lib/utils";
 import { BookOpen, ChevronRight } from "lucide-react";
 
-const STORAGE_KEY = "flightpath-dashboard-faa-sidebar";
+const DEFAULT_STORAGE_KEY = "flightpath-dashboard-faa-sidebar";
 
 function mergeFaaResources(
   primary: FaaResource[],
@@ -55,6 +55,7 @@ interface DashboardFaaSidebarProps {
   resources: FaaResource[];
   supplemental: FaaResource[];
   defaultOpen: boolean;
+  storageKey?: string;
 }
 
 export function DashboardFaaMobileButton({
@@ -87,20 +88,21 @@ export function DashboardFaaSidebar({
   resources,
   supplemental,
   defaultOpen,
+  storageKey = DEFAULT_STORAGE_KEY,
 }: DashboardFaaSidebarProps) {
   const [open, setOpen] = useState(defaultOpen);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(storageKey);
     if (stored !== null) {
       setOpen(stored === "true");
     }
-  }, []);
+  }, [storageKey]);
 
   function toggle() {
     setOpen((prev) => {
       const next = !prev;
-      localStorage.setItem(STORAGE_KEY, String(next));
+      localStorage.setItem(storageKey, String(next));
       return next;
     });
   }
