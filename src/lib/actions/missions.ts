@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveStudentId } from "@/lib/auth";
 import {
   canAdvanceMissionStatus,
+  canRevertMissionStatus,
   isMissionAgeEligible,
 } from "@/lib/missions/mission-eligibility";
 import { syncAgeGatedMissionAvailability } from "@/lib/missions/sync-missions";
@@ -132,7 +133,15 @@ export async function updateMissionStatus(
 
   if (!mission) return { error: "Mission not found" };
 
-  if (status === "in_progress" || status === "completed") {
+  const isRevert =
+    userMission.status === "completed" && status === "in_progress";
+
+  if (isRevert) {
+    const revertEligibility = canRevertMissionStatus(userMission.status);
+    if (!revertEligibility.allowed) {
+      return { error: revertEligibility.error };
+    }
+  } else if (status === "in_progress" || status === "completed") {
     const eligibility = canAdvanceMissionStatus(
       birthDate,
       mission.title,
@@ -146,6 +155,8 @@ export async function updateMissionStatus(
   const update: UserMissionUpdate = { status, notes: notes ?? null };
   if (status === "completed") {
     update.completion_date = new Date().toISOString().split("T")[0];
+  } else if (isRevert) {
+    update.completion_date = null;
   }
 
   const { error } = await supabase
@@ -156,9 +167,13 @@ export async function updateMissionStatus(
 
   if (error) return { error: error.message };
 
+  const shouldSync = status === "completed" || isRevert;
+
   if (status === "completed") {
     await unlockFollowingMissions(studentId, userMission.mission_id, birthDate);
+  }
 
+  if (shouldSync) {
     const [{ data: missions }, { data: userMissions }] = await Promise.all([
       supabase.from("missions").select("*").order("order_number"),
       supabase.from("user_missions").select("*").eq("user_id", studentId),

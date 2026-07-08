@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { MissionAgeNotice } from "@/components/missions/mission-age-notice";
 import { MissionResourceLinks } from "@/components/missions/mission-resource-links";
-import { canAdvanceMissionStatus } from "@/lib/missions/mission-eligibility";
+import { canAdvanceMissionStatus, canRevertMissionStatus } from "@/lib/missions/mission-eligibility";
 import type { Mission, MissionStatus, UserMission } from "@/types/models";
 
 interface MissionDetailDialogProps {
@@ -72,8 +72,8 @@ export function MissionDetailDialog({
               className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
             />
           )}
-          {isStudent && selected && selected.status !== "completed" && (
-            <div className="flex gap-2">
+          {isStudent && selected && (
+            <div className="flex flex-wrap gap-2">
               {selected.status === "available" &&
                 canAdvanceMissionStatus(
                   birthDate,
@@ -98,6 +98,16 @@ export function MissionDetailDialog({
                     disabled={loading}
                   >
                     Land
+                  </Button>
+                )}
+              {selected.status === "completed" &&
+                canRevertMissionStatus(selected.status).allowed && (
+                  <Button
+                    variant="outline"
+                    onClick={() => onStatusChange("in_progress")}
+                    disabled={loading}
+                  >
+                    Undo Land
                   </Button>
                 )}
             </div>

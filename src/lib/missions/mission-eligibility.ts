@@ -5,7 +5,7 @@ import {
   isAgeEligible,
   type PilotMilestone,
 } from "@/lib/calculations/certification";
-import type { Mission, UserMission } from "@/types/models";
+import type { Mission, MissionStatus, UserMission } from "@/types/models";
 
 const MISSION_MILESTONE_IDS: Record<string, string> = {
   "Obtain Student Pilot Certificate": "student_pilot",
@@ -109,6 +109,19 @@ export function canAdvanceMissionStatus(
       error:
         getMissionAgeBlockMessage(birthDate, missionTitle) ??
         "You do not meet the FAA age requirement for this mission yet.",
+    };
+  }
+
+  return { allowed: true };
+}
+
+export function canRevertMissionStatus(
+  currentStatus: MissionStatus
+): { allowed: boolean; error?: string } {
+  if (currentStatus !== "completed") {
+    return {
+      allowed: false,
+      error: "Only landed missions can be reopened.",
     };
   }
 

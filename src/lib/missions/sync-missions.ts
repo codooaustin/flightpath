@@ -69,13 +69,26 @@ export async function syncAgeGatedMissionAvailability(
   );
 
   for (const stage of sortedStages) {
-    if (!isPreviousStageComplete(stage, sortedStages, missions, userMissions)) {
-      continue;
-    }
-
     const stageMissions = missions
       .filter((mission) => mission.stage_id === stage.id)
       .sort((left, right) => left.order_number - right.order_number);
+
+    if (!isPreviousStageComplete(stage, sortedStages, missions, userMissions)) {
+      for (const mission of stageMissions) {
+        const userMission = userMissions.find(
+          (entry) => entry.mission_id === mission.id
+        );
+        if (
+          userMission &&
+          userMission.status !== "completed" &&
+          userMission.status !== "locked"
+        ) {
+          await setMissionStatus(studentId, userMission.id, "locked");
+          userMission.status = "locked";
+        }
+      }
+      continue;
+    }
 
     let reachedSequentialGate = false;
 
