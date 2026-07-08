@@ -3,17 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signUp } from "@/lib/actions/auth";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -21,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plane } from "lucide-react";
+import { PlaneTakeoff } from "lucide-react";
 
 export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
@@ -40,74 +33,91 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-sky-50 to-white p-4 dark:from-slate-950 dark:to-slate-900">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900">
-            <Plane className="h-6 w-6 text-sky-600" />
-          </div>
-          <CardTitle className="text-2xl">Start your flight path</CardTitle>
-          <CardDescription>
-            Create an account to begin your aviation journey
-          </CardDescription>
-        </CardHeader>
-        <form action={handleSubmit}>
-          <CardContent className="space-y-4">
-            {error && (
-              <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
-              </p>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="name">Full name</Label>
-              <Input id="name" name="name" placeholder="Alex Pilot" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="pilot@example.com"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                minLength={6}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>I am a...</Label>
-              <Select value={role} onValueChange={(v) => v && setRole(v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">Student Pilot</SelectItem>
-                  <SelectItem value="parent">Parent / Mentor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating account..." : "Create account"}
-            </Button>
-            <p className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link href="/login" className="text-sky-600 hover:underline">
-                Sign in
-              </Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
+    <AuthShell
+      title="Start your flight path"
+      subtitle="Create an account and plot your course from first lesson to captain."
+      footer={
+        <>
+          Already flying with us?{" "}
+          <Link href="/login" className="font-medium text-sky-600 hover:underline">
+            Sign in
+          </Link>
+        </>
+      }
+    >
+      <form action={handleSubmit} className="space-y-5">
+        {error && (
+          <p className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="name">Full name</Label>
+          <Input
+            id="name"
+            name="name"
+            placeholder="Alex Morgan"
+            autoComplete="name"
+            required
+            className="h-11"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="captain@flightpath.app"
+            autoComplete="email"
+            required
+            className="h-11"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            minLength={6}
+            required
+            className="h-11"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>I am a...</Label>
+          <Select value={role} onValueChange={(v) => v && setRole(v)}>
+            <SelectTrigger className="h-11">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="student">Student Pilot</SelectItem>
+              <SelectItem value="parent">Parent / Mentor</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Button
+          type="submit"
+          className="h-11 w-full gap-2 bg-sky-600 text-white hover:bg-sky-700"
+          disabled={loading}
+        >
+          {loading ? (
+            "Preparing for departure..."
+          ) : (
+            <>
+              <PlaneTakeoff className="h-4 w-4" />
+              Create account
+            </>
+          )}
+        </Button>
+      </form>
+    </AuthShell>
   );
 }

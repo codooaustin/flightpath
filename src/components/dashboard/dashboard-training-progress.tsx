@@ -153,11 +153,20 @@ export function DashboardTrainingProgress({
         )}
 
         <section className="mt-auto space-y-1 border-t pt-3 text-sm">
-          {age != null ? (
-            <p>
-              <span className="text-muted-foreground">Age: </span>
-              <span className="font-medium">{age} years</span>
-            </p>
+          {birthDate ? (
+            <>
+              {age != null && (
+                <p>
+                  <span className="text-muted-foreground">Age: </span>
+                  <span className="font-medium">{age} years</span>
+                </p>
+              )}
+              {display?.milestone && (
+                <p className="text-muted-foreground">
+                  {formatAgeEligibility(birthDate, display.milestone)}
+                </p>
+              )}
+            </>
           ) : (
             <p className="text-muted-foreground">
               Add your birthday in{" "}
@@ -165,11 +174,6 @@ export function DashboardTrainingProgress({
                 Settings
               </Link>{" "}
               to track age requirements.
-            </p>
-          )}
-          {display?.milestone && (
-            <p className="text-muted-foreground">
-              {formatAgeEligibility(birthDate, display.milestone)}
             </p>
           )}
         </section>

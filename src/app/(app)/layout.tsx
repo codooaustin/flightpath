@@ -17,7 +17,7 @@ export default async function AppLayout({
       : [];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       <AppSidebar
         profile={profile}
         logo={
@@ -27,7 +27,7 @@ export default async function AppLayout({
           </Link>
         }
       />
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <header className="flex h-14 items-center justify-between border-b px-4 lg:px-6">
           <div className="lg:hidden">
             <Link href="/dashboard" className="flex items-center gap-2">

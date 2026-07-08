@@ -3,18 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signIn } from "@/lib/actions/auth";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Plane } from "lucide-react";
+import { LogIn, PlaneTakeoff } from "lucide-react";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
@@ -31,57 +24,72 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-sky-50 to-white p-4 dark:from-slate-950 dark:to-slate-900">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900">
-            <Plane className="h-6 w-6 text-sky-600" />
-          </div>
-          <CardTitle className="text-2xl">Welcome back</CardTitle>
-          <CardDescription>
-            Sign in to continue your aviation journey
-          </CardDescription>
-        </CardHeader>
-        <form action={handleSubmit}>
-          <CardContent className="space-y-4">
-            {error && (
-              <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
-              </p>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="pilot@example.com"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign in"}
-            </Button>
-            <p className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
-              <Link href="/signup" className="text-sky-600 hover:underline">
-                Sign up
-              </Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
+    <AuthShell
+      title="Welcome back, aviator"
+      subtitle="Sign in to pick up your flight plan where you left off."
+      footer={
+        <>
+          New to Flight Path?{" "}
+          <Link href="/signup" className="font-medium text-sky-600 hover:underline">
+            Create your account
+          </Link>
+        </>
+      }
+    >
+      <form action={handleSubmit} className="space-y-5">
+        {error && (
+          <p className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="captain@flightpath.app"
+            autoComplete="email"
+            required
+            className="h-11"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            className="h-11"
+          />
+        </div>
+
+        <Button
+          type="submit"
+          className="h-11 w-full gap-2 bg-sky-600 text-white hover:bg-sky-700"
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <LogIn className="h-4 w-4" />
+              Contacting tower...
+            </>
+          ) : (
+            <>
+              <PlaneTakeoff className="h-4 w-4" />
+              Sign in
+            </>
+          )}
+        </Button>
+
+        <p className="text-center text-xs text-muted-foreground">
+          Your logbook, missions, and training progress sync when you return.
+        </p>
+      </form>
+    </AuthShell>
   );
 }

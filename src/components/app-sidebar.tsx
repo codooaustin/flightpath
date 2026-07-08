@@ -87,12 +87,12 @@ export function AppSidebar({ profile, logo }: AppSidebarProps) {
 
   return (
     <>
-      <aside className="hidden w-64 flex-col border-r bg-card lg:flex">
-        <div className="flex h-14 items-center border-b px-4">{logo}</div>
-        <div className="flex-1 overflow-auto p-4">
+      <aside className="hidden h-full w-64 shrink-0 flex-col border-r bg-card lg:flex">
+        <div className="flex h-14 shrink-0 items-center border-b px-4">{logo}</div>
+        <div className="flex-1 overflow-hidden p-4">
           <NavLinks pathname={pathname} />
         </div>
-        <div className="border-t p-4">
+        <div className="shrink-0 border-t p-4">
           <DropdownMenu>
             <DropdownMenuTrigger
               className="w-full"
