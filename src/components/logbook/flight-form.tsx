@@ -120,7 +120,7 @@ export function FlightForm({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">
           <LabelWithHelp htmlFor="pic_time" fieldKey="pic_time">
-            PIC Time
+            Pilot in Command
           </LabelWithHelp>
           <Input
             id="pic_time"
@@ -133,7 +133,7 @@ export function FlightForm({
         </div>
         <div className="space-y-2">
           <LabelWithHelp htmlFor="dual_time" fieldKey="dual_time">
-            Dual Time
+            Dual Instruction
           </LabelWithHelp>
           <Input
             id="dual_time"

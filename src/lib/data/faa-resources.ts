@@ -321,12 +321,16 @@ export const LOGBOOK_FIELD_HELP: Record<
     label: "Flight Time",
     tip: "Total duration of the flight from start to shutdown.",
   },
+  total_hours: {
+    label: "Total Hours",
+    tip: "Sum of all flight time logged across every entry in your logbook.",
+  },
   pic_time: {
-    label: "PIC Time",
+    label: "Pilot in Command",
     tip: "Pilot-in-command time — when you acted as sole manipulator of the controls and were responsible for the flight.",
   },
   dual_time: {
-    label: "Dual Time",
+    label: "Dual Instruction",
     tip: "Flight time with a certificated flight instructor providing training.",
   },
   cross_country_time: {
@@ -340,5 +344,13 @@ export const LOGBOOK_FIELD_HELP: Record<
   instrument_time: {
     label: "Instrument Time",
     tip: "Time operating solely by reference to instruments, typically with a view-limiting device or in IMC.",
+  },
+  landings: {
+    label: "Landings",
+    tip: "Total number of landings recorded across all logged flights.",
+  },
+  flights: {
+    label: "Flights",
+    tip: "Number of individual flight entries in your logbook.",
   },
 };
