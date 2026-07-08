@@ -37,18 +37,27 @@ export function FaaHelpTip({ resource, className }: FaaHelpTipProps) {
       <PopoverContent className="w-80" align="start">
         <PopoverHeader>
           <PopoverTitle>{resource.title}</PopoverTitle>
-          <PopoverDescription>{resource.summary}</PopoverDescription>
+          <PopoverDescription className="leading-relaxed">
+            {resource.summary}
+          </PopoverDescription>
         </PopoverHeader>
-        <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
-          {resource.details.map((detail) => (
-            <li key={detail}>{detail}</li>
-          ))}
-        </ul>
+        {resource.details.length > 0 && (
+          <div className="mt-3 space-y-1.5">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              What to know
+            </p>
+            <ul className="list-disc space-y-1 pl-4 text-xs leading-relaxed text-muted-foreground">
+              {resource.details.map((detail) => (
+                <li key={detail}>{detail}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         <a
           href={resource.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs font-medium text-sky-600 hover:underline"
+          className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-sky-600 hover:underline"
         >
           {resource.urlLabel}
           <ExternalLink className="h-3 w-3" />
@@ -79,12 +88,14 @@ export function FaaHelpLink({ resource, className }: FaaHelpLinkProps) {
 
 function FaaResourceListItem({ resource }: { resource: FaaResource }) {
   return (
-    <div className="space-y-1">
-      <div className="flex items-start gap-1">
-        <p className="text-sm font-medium">{resource.title}</p>
+    <div className="space-y-2 rounded-lg border bg-muted/20 p-3">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-medium leading-snug">{resource.title}</p>
         <FaaHelpTip resource={resource} />
       </div>
-      <p className="text-xs text-muted-foreground">{resource.summary}</p>
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        {resource.summary}
+      </p>
       <FaaHelpLink resource={resource} className="text-xs" />
     </div>
   );
@@ -97,7 +108,7 @@ export function FaaResourceLinks({
   if (resources.length === 0) return null;
 
   return (
-    <div className={cn("space-y-4", title && "border-t pt-3")}>
+    <div className={cn("space-y-3", title && "border-t pt-4")}>
       {title && (
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {title}
@@ -158,8 +169,11 @@ export function FieldHelpTip({ tip, label }: FieldHelpTipProps) {
           </Button>
         }
       />
-      <PopoverContent className="w-64" align="start">
-        <p className="text-sm text-muted-foreground">{tip}</p>
+      <PopoverContent className="w-72" align="start">
+        <p className="text-xs font-medium text-foreground">{label}</p>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+          {tip}
+        </p>
       </PopoverContent>
     </Popover>
   );

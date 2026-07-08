@@ -348,6 +348,7 @@ export function MissionsContent({
                                   mission={um.mission}
                                   missions={missions}
                                   userMissions={userMissions}
+                                  variant="inline"
                                   className="mt-2 text-xs text-amber-700 dark:text-amber-300"
                                 />
                               )}

@@ -111,7 +111,7 @@ export const FAA_RESOURCES: Record<string, FaaResource> = {
     milestoneId: "medical_certificate",
     title: "Aviation Medical Certificate",
     summary:
-      "Required before solo flight. Separate from your student pilot certificate.",
+      "Required before your first solo flight. You can start lessons without it, but schedule early — delays are common.",
     details: [
       "Complete FAA MedXPress (Form 8500-8) before your AME appointment.",
       "Schedule with an Aviation Medical Examiner (AME) — third-class is typical for students.",
@@ -126,7 +126,7 @@ export const FAA_RESOURCES: Record<string, FaaResource> = {
     milestoneId: "medical_exam",
     title: "AME Examination Process",
     summary:
-      "What to expect when you visit an Aviation Medical Examiner for your medical certificate.",
+      "Your AME visit includes a health review and physical exam. Complete MedXPress online before you go.",
     details: [
       "Create a MedXPress account and submit your medical history before the visit.",
       "Your AME will review vitals, vision, hearing, and perform a physical exam.",
