@@ -11,6 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import type { FaaResource } from "@/lib/data/faa-resources";
+import { cn } from "@/lib/utils";
 
 interface FaaHelpTipProps {
   resource: FaaResource;
@@ -76,25 +77,38 @@ export function FaaHelpLink({ resource, className }: FaaHelpLinkProps) {
   );
 }
 
+function FaaResourceListItem({ resource }: { resource: FaaResource }) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-start gap-1">
+        <p className="text-sm font-medium">{resource.title}</p>
+        <FaaHelpTip resource={resource} />
+      </div>
+      <p className="text-xs text-muted-foreground">{resource.summary}</p>
+      <FaaHelpLink resource={resource} className="text-xs" />
+    </div>
+  );
+}
+
 export function FaaResourceLinks({
   resources,
-  title = "More FAA resources",
+  title,
 }: FaaResourceLinksProps) {
   if (resources.length === 0) return null;
 
   return (
-    <div className="space-y-2 border-t pt-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {title}
-      </p>
-      <ul className="space-y-2">
-        {resources.map((resource) => (
-          <li key={resource.milestoneId} className="flex items-start gap-1">
-            <FaaHelpLink resource={resource} className="text-xs" />
-            <FaaHelpTip resource={resource} />
-          </li>
-        ))}
-      </ul>
+    <div className={cn("space-y-4", title && "border-t pt-3")}>
+      {title && (
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {title}
+        </p>
+      )}
+      {resources.map((resource) => (
+        <FaaResourceListItem
+          key={resource.milestoneId}
+          resource={resource}
+        />
+      ))}
     </div>
   );
 }
@@ -112,19 +126,12 @@ export function FaaGuidancePanel({ resources }: FaaGuidancePanelProps) {
   if (resources.length === 0) return null;
 
   return (
-    <div className="space-y-3 border-t pt-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        FAA Guidance
-      </p>
+    <div className="space-y-4">
       {resources.map((resource) => (
-        <div key={resource.milestoneId} className="space-y-1">
-          <div className="flex items-start gap-1">
-            <p className="text-sm font-medium">{resource.title}</p>
-            <FaaHelpTip resource={resource} />
-          </div>
-          <p className="text-xs text-muted-foreground">{resource.summary}</p>
-          <FaaHelpLink resource={resource} className="text-xs" />
-        </div>
+        <FaaResourceListItem
+          key={resource.milestoneId}
+          resource={resource}
+        />
       ))}
     </div>
   );

@@ -11,13 +11,25 @@ import {
 } from "@/components/ui/sheet";
 import {
   FaaGuidancePanel,
-  FaaResourceLinks,
 } from "@/components/certification/faa-help-tip";
 import type { FaaResource } from "@/lib/data/faa-resources";
 import { cn } from "@/lib/utils";
 import { BookOpen, ChevronRight } from "lucide-react";
 
 const STORAGE_KEY = "flightpath-dashboard-faa-sidebar";
+
+function mergeFaaResources(
+  primary: FaaResource[],
+  supplemental: FaaResource[]
+): FaaResource[] {
+  const seen = new Set<string>();
+
+  return [...primary, ...supplemental].filter((resource) => {
+    if (seen.has(resource.milestoneId)) return false;
+    seen.add(resource.milestoneId);
+    return true;
+  });
+}
 
 function FaaSidebarContent({
   resources,
@@ -26,7 +38,9 @@ function FaaSidebarContent({
   resources: FaaResource[];
   supplemental: FaaResource[];
 }) {
-  if (resources.length === 0 && supplemental.length === 0) {
+  const allResources = mergeFaaResources(resources, supplemental);
+
+  if (allResources.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
         No FAA resources for your current training stage.
@@ -34,12 +48,7 @@ function FaaSidebarContent({
     );
   }
 
-  return (
-    <div className="space-y-4">
-      <FaaGuidancePanel resources={resources} />
-      <FaaResourceLinks resources={supplemental} />
-    </div>
-  );
+  return <FaaGuidancePanel resources={allResources} />;
 }
 
 interface DashboardFaaSidebarProps {
