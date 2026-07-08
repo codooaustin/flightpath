@@ -180,6 +180,54 @@ export async function getCalendarData(searchParams?: {
   };
 }
 
+export async function getJournalData(searchParams?: { student?: string }) {
+  const supabase = await createClient();
+  const studentId = await getActiveStudentId(searchParams);
+
+  const [
+    { data: entries },
+    { data: stages },
+    { data: missions },
+    { data: userMissions },
+    { data: studentProfile },
+  ] = await Promise.all([
+    supabase
+      .from("journal_entries")
+      .select("*")
+      .eq("user_id", studentId)
+      .order("entry_date", { ascending: false }),
+    supabase.from("stages").select("*").order("order_number"),
+    supabase.from("missions").select("*").order("order_number"),
+    supabase.from("user_missions").select("*").eq("user_id", studentId),
+    supabase.from("profiles").select("birth_date").eq("id", studentId).single(),
+  ]);
+
+  const missionList = missions ?? [];
+  const mergedUserMissions = mergeUserMissions(userMissions ?? [], missionList);
+
+  await syncAgeGatedMissionAvailability(
+    studentId,
+    studentProfile?.birth_date ?? null,
+    missionList,
+    mergedUserMissions,
+    stages ?? []
+  );
+
+  const { data: refreshedUserMissions } = await supabase
+    .from("user_missions")
+    .select("*")
+    .eq("user_id", studentId);
+
+  return {
+    entries: entries ?? [],
+    stages: stages ?? [],
+    missions: missionList,
+    userMissions: mergeUserMissions(refreshedUserMissions ?? [], missionList),
+    studentProfile: studentProfile ?? null,
+    studentId,
+  };
+}
+
 export async function getMissionsData(searchParams?: { student?: string }) {
   const supabase = await createClient();
   const studentId = await getActiveStudentId(searchParams);

@@ -1,31 +1,34 @@
-import { createClient } from "@/lib/supabase/server";
-import { getActiveStudentId, getCurrentProfile } from "@/lib/auth";
+import { getJournalData } from "@/lib/data";
+import { getCurrentProfile } from "@/lib/auth";
 import { JournalContent } from "@/components/journal/journal-content";
 
 export default async function JournalPage({
   searchParams,
 }: {
-  searchParams: Promise<{ student?: string }>;
+  searchParams: Promise<{
+    student?: string;
+    open?: string;
+    new?: string;
+    mission?: string;
+  }>;
 }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const studentId = await getActiveStudentId(params);
-  const profile = await getCurrentProfile();
-
-  const [{ data: entries }, { data: missions }] = await Promise.all([
-    supabase
-      .from("journal_entries")
-      .select("*")
-      .eq("user_id", studentId)
-      .order("entry_date", { ascending: false }),
-    supabase.from("missions").select("*").order("order_number"),
+  const [data, profile] = await Promise.all([
+    getJournalData(params),
+    getCurrentProfile(),
   ]);
 
   return (
     <JournalContent
-      entries={entries ?? []}
-      missions={missions ?? []}
+      entries={data.entries}
+      missions={data.missions}
+      userMissions={data.userMissions}
+      stages={data.stages}
+      birthDate={data.studentProfile?.birth_date ?? null}
       isStudent={profile?.role === "student"}
+      initialOpenEntryId={params.open ?? null}
+      initialOpenNew={params.new === "1"}
+      initialMissionId={params.mission ?? null}
     />
   );
 }
