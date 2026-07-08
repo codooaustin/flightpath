@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateProfile, linkStudent, unlinkStudent } from "@/lib/actions/auth";
 import { SignOutButton } from "@/components/sign-out-button";
+import { FaaHelpTip } from "@/components/certification/faa-help-tip";
+import { FAA_RESOURCES } from "@/lib/data/faa-resources";
 import type { Profile, StudentParentLink } from "@/types/models";
 import { toast } from "sonner";
 
@@ -72,7 +74,10 @@ export function SettingsContent({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="birth_date">Date of Birth</Label>
+              <div className="flex items-center gap-1">
+                <Label htmlFor="birth_date">Date of Birth</Label>
+                <FaaHelpTip resource={FAA_RESOURCES.age_requirements} />
+              </div>
               <Input
                 id="birth_date"
                 name="birth_date"
@@ -80,7 +85,15 @@ export function SettingsContent({
                 defaultValue={profile.birth_date ?? ""}
               />
               <p className="text-xs text-muted-foreground">
-                Used to track FAA age requirements for certifications.
+                Used to track FAA age requirements for certifications.{" "}
+                <a
+                  href={FAA_RESOURCES.student_pilot.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sky-600 hover:underline"
+                >
+                  Student pilot requirements
+                </a>
               </p>
             </div>
             <div className="space-y-2">

@@ -27,6 +27,15 @@ import {
   getNextHourAchievement,
   getNextMilestone,
 } from "@/lib/calculations/certification";
+import {
+  FAA_RESOURCES,
+  getFaaResource,
+  getRelevantFaaResources,
+} from "@/lib/data/faa-resources";
+import {
+  FaaGuidancePanel,
+  FaaHelpTip,
+} from "@/components/certification/faa-help-tip";
 import { EVENT_TYPE_LABELS } from "@/types/models";
 import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
 import type {
@@ -83,6 +92,13 @@ export function DashboardContent({
     : null;
   const age = studentProfile?.birth_date
     ? getAge(studentProfile.birth_date)
+    : null;
+  const faaResources = getRelevantFaaResources(
+    hourTotals.total,
+    nextMilestone?.id ?? null
+  );
+  const nextMilestoneResource = nextMilestone
+    ? getFaaResource(nextMilestone.id)
     : null;
 
   return (
@@ -229,6 +245,7 @@ export function DashboardContent({
             <CardTitle className="flex items-center gap-2">
               <Plane className="h-5 w-5 text-sky-600" />
               Flight Hours
+              <FaaHelpTip resource={FAA_RESOURCES.flight_logbook} />
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -281,6 +298,7 @@ export function DashboardContent({
             <CardTitle className="flex items-center gap-2">
               <Award className="h-5 w-5 text-sky-600" />
               Certification & Age
+              <FaaHelpTip resource={FAA_RESOURCES.age_requirements} />
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -301,7 +319,12 @@ export function DashboardContent({
             {nextMilestone ? (
               <>
                 <div>
-                  <p className="font-medium">{nextMilestone.name}</p>
+                  <div className="flex items-center gap-1">
+                    <p className="font-medium">{nextMilestone.name}</p>
+                    {nextMilestoneResource && (
+                      <FaaHelpTip resource={nextMilestoneResource} />
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground line-clamp-2">
                     {nextMilestone.description}
                   </p>
@@ -348,6 +371,7 @@ export function DashboardContent({
                 No remaining hour-based certification targets.
               </p>
             )}
+            <FaaGuidancePanel resources={faaResources} />
           </CardContent>
         </Card>
       </div>

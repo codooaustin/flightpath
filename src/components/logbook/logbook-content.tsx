@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,12 @@ import {
   formatHours,
   sumFlightHours,
 } from "@/lib/calculations/flight-hours";
+import { FAA_RESOURCES, LOGBOOK_FIELD_HELP } from "@/lib/data/faa-resources";
+import {
+  FaaHelpLink,
+  FaaHelpTip,
+  FieldHelpTip,
+} from "@/components/certification/faa-help-tip";
 import type { Flight } from "@/types/models";
 import { format } from "date-fns";
 import { Pencil, Plane, Plus, Trash2 } from "lucide-react";
@@ -39,6 +45,24 @@ import { toast } from "sonner";
 interface LogbookContentProps {
   flights: Flight[];
   isStudent: boolean;
+}
+
+function LabelWithHelp({
+  htmlFor,
+  children,
+  fieldKey,
+}: {
+  htmlFor: string;
+  children: ReactNode;
+  fieldKey?: keyof typeof LOGBOOK_FIELD_HELP;
+}) {
+  const help = fieldKey ? LOGBOOK_FIELD_HELP[fieldKey] : null;
+  return (
+    <div className="flex items-center gap-1">
+      <Label htmlFor={htmlFor}>{children}</Label>
+      {help && <FieldHelpTip label={help.label} tip={help.tip} />}
+    </div>
+  );
 }
 
 function FlightForm({
@@ -81,7 +105,9 @@ function FlightForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="flight_time">Flight Time (hrs)</Label>
+          <LabelWithHelp htmlFor="flight_time" fieldKey="flight_time">
+            Flight Time (hrs)
+          </LabelWithHelp>
           <Input
             id="flight_time"
             name="flight_time"
@@ -140,7 +166,9 @@ function FlightForm({
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor="pic_time">PIC Time</Label>
+          <LabelWithHelp htmlFor="pic_time" fieldKey="pic_time">
+            PIC Time
+          </LabelWithHelp>
           <Input
             id="pic_time"
             name="pic_time"
@@ -151,7 +179,9 @@ function FlightForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="dual_time">Dual Time</Label>
+          <LabelWithHelp htmlFor="dual_time" fieldKey="dual_time">
+            Dual Time
+          </LabelWithHelp>
           <Input
             id="dual_time"
             name="dual_time"
@@ -162,7 +192,9 @@ function FlightForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="cross_country_time">Cross-Country</Label>
+          <LabelWithHelp htmlFor="cross_country_time" fieldKey="cross_country_time">
+            Cross-Country
+          </LabelWithHelp>
           <Input
             id="cross_country_time"
             name="cross_country_time"
@@ -173,7 +205,9 @@ function FlightForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="night_time">Night Time</Label>
+          <LabelWithHelp htmlFor="night_time" fieldKey="night_time">
+            Night Time
+          </LabelWithHelp>
           <Input
             id="night_time"
             name="night_time"
@@ -184,7 +218,9 @@ function FlightForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="instrument_time">Instrument Time</Label>
+          <LabelWithHelp htmlFor="instrument_time" fieldKey="instrument_time">
+            Instrument Time
+          </LabelWithHelp>
           <Input
             id="instrument_time"
             name="instrument_time"
@@ -253,10 +289,17 @@ export function LogbookContent({ flights, isStudent }: LogbookContentProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Logbook</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight">Logbook</h1>
+            <FaaHelpTip resource={FAA_RESOURCES.flight_logbook} />
+          </div>
           <p className="text-muted-foreground">
             Log flights and track your hour totals
           </p>
+          <FaaHelpLink
+            resource={FAA_RESOURCES.student_pilot}
+            className="mt-1 text-xs"
+          />
         </div>
         {isStudent && (
           <Dialog
