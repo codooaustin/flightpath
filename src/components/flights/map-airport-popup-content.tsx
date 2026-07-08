@@ -22,8 +22,8 @@ export function MapAirportPopupContent({
   const airport = point.name ? parseAirportName(point.name).airport : null;
 
   return (
-    <div className="min-w-[112px] max-w-[188px] px-1.5 py-0.5">
-      <div className="flex items-center gap-1">
+    <div className="flex min-w-[120px] max-w-[188px] flex-col items-center gap-0.5 p-0 text-center">
+      <div className="flex items-center justify-center gap-1">
         <span
           className={cn(
             "flex h-4 w-4 shrink-0 items-center justify-center rounded-full",
@@ -45,7 +45,7 @@ export function MapAirportPopupContent({
         </span>
       </div>
       {airport && (
-        <p className="mt-0.5 break-words pl-5 text-[10px] leading-snug text-muted-foreground">
+        <p className="break-words text-[10px] leading-snug text-muted-foreground">
           {airport}
         </p>
       )}
