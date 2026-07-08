@@ -40,7 +40,7 @@ import {
 } from "@/components/certification/faa-help-tip";
 import { FlightLogCard } from "@/components/dashboard/flight-log-card";
 import { EVENT_TYPE_LABELS } from "@/types/models";
-import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
+import { MissionStatusBadge, getMissionSurfaceStyles } from "@/components/missions/mission-status-badge";
 import { MissionResourceLinks } from "@/components/missions/mission-resource-links";
 import type {
   CalendarEvent,
@@ -166,7 +166,13 @@ export function DashboardContent({
           </CardContent>
         </Card>
 
-        <Card className="h-full">
+        <Card
+          className={
+            nextMission?.status
+              ? getMissionSurfaceStyles(nextMission.status, "h-full")
+              : "h-full"
+          }
+        >
           <CardHeader>
             <CardTitle className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-2">

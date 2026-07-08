@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Circle, Lock } from "lucide-react";
-import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
+import { MissionStatusBadge, getMissionSurfaceStyles, getMissionTitleStyles } from "@/components/missions/mission-status-badge";
 import { MissionResourceLinks } from "@/components/missions/mission-resource-links";
 import { StageResourceLinks } from "@/components/missions/stage-resource-links";
 import {
@@ -133,11 +133,21 @@ export function RoadmapContent({
                         return (
                           <li
                             key={mission.id}
-                            className="space-y-2 rounded-lg border p-3"
+                            className={getMissionSurfaceStyles(
+                              um?.status ?? "locked",
+                              "space-y-2 rounded-lg border p-3"
+                            )}
                           >
                             <div className="flex items-center justify-between gap-2">
                               <div>
-                                <p className="font-medium">{mission.title}</p>
+                                <p
+                                  className={getMissionTitleStyles(
+                                    um?.status ?? "locked",
+                                    "font-medium"
+                                  )}
+                                >
+                                  {mission.title}
+                                </p>
                                 <p className="text-xs text-muted-foreground">
                                   {mission.estimated_duration}
                                   {mission.estimated_cost

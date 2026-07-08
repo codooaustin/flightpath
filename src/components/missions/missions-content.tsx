@@ -19,7 +19,7 @@ import {
 import { updateMissionStatus } from "@/lib/actions/missions";
 import { MISSION_STATUS_LABELS } from "@/types/models";
 import type { Mission, MissionStatus, Stage, UserMission } from "@/types/models";
-import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
+import { MissionStatusBadge, getMissionSurfaceStyles, getMissionTitleStyles } from "@/components/missions/mission-status-badge";
 import { MissionResourceLinks } from "@/components/missions/mission-resource-links";
 import { formatCurrency } from "@/lib/calculations/costs";
 import { toast } from "sonner";
@@ -104,12 +104,17 @@ export function MissionsContent({
         {filtered.map((um) => (
           <Card
             key={um.id}
-            className="cursor-pointer transition-shadow hover:shadow-md"
+            className={getMissionSurfaceStyles(
+              um.status,
+              "cursor-pointer transition-all hover:shadow-md"
+            )}
             onClick={() => setSelected(um)}
           >
             <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-base">
+              <div className="flex items-start justify-between gap-2">
+                <CardTitle
+                  className={getMissionTitleStyles(um.status, "text-base")}
+                >
                   {um.mission?.title ?? "Mission"}
                 </CardTitle>
                 <MissionStatusBadge status={um.status} />
