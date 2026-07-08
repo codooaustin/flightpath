@@ -65,7 +65,7 @@ export function DashboardTrainingProgress({
               <p className="text-sm text-muted-foreground">
                 {display.description}
               </p>
-              {display.contextualNote && (
+              {display.contextualNote && display.mode !== "certificate" && (
                 <p className="mt-1 text-xs text-muted-foreground">
                   {display.contextualNote}
                 </p>
@@ -91,13 +91,17 @@ export function DashboardTrainingProgress({
                   </p>
                 </div>
                 <FlightProgress value={primaryRequirement.percent} />
-                {hoursRemaining != null && hoursRemaining > 0 && (
+                {display.mode === "certificate" && display.contextualNote ? (
                   <p className="text-xs text-muted-foreground">
-                    {formatHours(hoursRemaining)}{" "}
-                    {display.mode === "certificate"
-                      ? "remaining to typical early training range"
-                      : "remaining to target"}
+                    {display.contextualNote}
                   </p>
+                ) : (
+                  hoursRemaining != null &&
+                  hoursRemaining > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {formatHours(hoursRemaining)} remaining to target
+                    </p>
+                  )
                 )}
               </div>
             ) : (

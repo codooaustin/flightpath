@@ -19,12 +19,10 @@ export function MapAirportPopupContent({
     index,
     total
   );
-  const { city, airport } = point.name
-    ? parseAirportName(point.name)
-    : { city: null, airport: null };
+  const airport = point.name ? parseAirportName(point.name).airport : null;
 
   return (
-    <div className="max-w-[148px] py-0.5 pl-1.5 pr-4">
+    <div className="min-w-[112px] max-w-[188px] py-0.5 pl-1.5 pr-4">
       <div className="flex items-center gap-1">
         <span
           className={cn(
@@ -46,17 +44,9 @@ export function MapAirportPopupContent({
           {FLIGHT_STOP_SHORT[point.stop_type]}
         </span>
       </div>
-      {(city || airport) && (
-        <p className="mt-0.5 truncate pl-5 text-[10px] leading-tight">
-          {city && (
-            <span className="font-medium uppercase text-muted-foreground">
-              {city}
-            </span>
-          )}
-          {city && airport && (
-            <span className="text-muted-foreground"> · </span>
-          )}
-          {airport && <span className="text-foreground">{airport}</span>}
+      {airport && (
+        <p className="mt-0.5 break-words pl-5 text-[10px] leading-snug text-foreground">
+          {airport}
         </p>
       )}
     </div>

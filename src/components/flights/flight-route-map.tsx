@@ -80,7 +80,7 @@ function AirportMarker({
       position={[point.lat, point.lng]}
       icon={createMarkerIcon(focused)}
     >
-      <Popup className="flight-map-popup" minWidth={0} maxWidth={152}>
+      <Popup className="flight-map-popup" minWidth={0} maxWidth={200}>
         <MapAirportPopupContent point={point} index={index} total={total} />
       </Popup>
     </Marker>

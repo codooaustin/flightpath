@@ -52,7 +52,7 @@ export function StageHourRequirementsCard({
               <p className="text-sm text-muted-foreground">
                 {display.description}
               </p>
-              {display.contextualNote && (
+              {display.contextualNote && display.mode !== "certificate" && (
                 <p className="text-xs text-muted-foreground">
                   {display.contextualNote}
                 </p>
@@ -77,6 +77,11 @@ export function StageHourRequirementsCard({
                     value={display.primaryRequirement.percent}
                     className="h-1.5"
                   />
+                  {display.mode === "certificate" && display.contextualNote && (
+                    <p className="text-xs text-muted-foreground">
+                      {display.contextualNote}
+                    </p>
+                  )}
                 </div>
                 {display.additionalRequirements.map((requirement) => (
                   <div key={requirement.label} className="space-y-1.5">
