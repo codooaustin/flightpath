@@ -12,18 +12,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DashboardFaaMobileButton,
-  DashboardFaaSidebar,
-} from "@/components/dashboard/dashboard-faa-sidebar";
 import { HangarEmptyState } from "@/components/hangar/hangar-empty-state";
 import { HangarFileDetailDialog } from "@/components/hangar/hangar-file-detail-dialog";
 import { HangarFileForm } from "@/components/hangar/hangar-file-form";
 import { HangarHero } from "@/components/hangar/hangar-hero";
 import { deleteFile } from "@/lib/actions/hangar";
-import { getCurrentStage, getNextActionableMission } from "@/lib/calculations/progress";
-import { getHangarGuidanceResources } from "@/lib/data/hangar-guidance";
-import { getStageResources } from "@/lib/data/stage-guidance";
+import { getNextActionableMission } from "@/lib/calculations/progress";
 import {
   fileCategoryBadgeClass,
   getFileDisplayTitle,
@@ -141,7 +135,6 @@ export function HangarContent({
   initialOpenNew = false,
 }: HangarContentProps) {
   const searchParams = useSearchParams();
-  const currentStage = getCurrentStage(stages, missions, userMissions);
   const nextMission = getNextActionableMission(
     userMissions,
     missions,
@@ -162,17 +155,6 @@ export function HangarContent({
   const [formCategory, setFormCategory] = useState<FileCategory>("photos");
   const [defaultDescription, setDefaultDescription] = useState<string>();
   const [loading, setLoading] = useState(false);
-
-  const hangarResources = getHangarGuidanceResources();
-  const stageResources = currentStage
-    ? getStageResources(currentStage.name)
-    : [];
-  const supplementalFaaResources = hangarResources.filter(
-    (resource) =>
-      !stageResources.some(
-        (existing) => existing.milestoneId === resource.milestoneId
-      )
-  );
 
   const categoryCounts = useMemo(() => {
     const counts = Object.keys(FILE_CATEGORY_LABELS).reduce(
@@ -281,29 +263,19 @@ export function HangarContent({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Hangar</h1>
-          <p className="text-muted-foreground">
-            Your digital aviation storage
-          </p>
-        </div>
-        <DashboardFaaMobileButton
-          resources={stageResources}
-          supplemental={supplementalFaaResources}
-        />
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Hangar</h1>
+        <p className="text-muted-foreground">Your digital aviation storage</p>
       </div>
 
-      <div className="flex gap-6">
-        <div className="min-w-0 flex-1 space-y-6">
-          <HangarHero
-            files={files}
-            categoryCounts={categoryCounts}
-            isStudent={isStudent}
-            onUpload={() => openUploadForm()}
-          />
+      <HangarHero
+        files={files}
+        categoryCounts={categoryCounts}
+        isStudent={isStudent}
+        onUpload={() => openUploadForm()}
+      />
 
-          <div className="space-y-4">
+      <div className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative min-w-0 flex-1 sm:max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -379,15 +351,6 @@ export function HangarContent({
               ))}
             </div>
           )}
-          </div>
-        </div>
-
-        <DashboardFaaSidebar
-          resources={stageResources}
-          supplemental={supplementalFaaResources}
-          defaultOpen
-          storageKey="flightpath-hangar-faa-sidebar"
-        />
       </div>
 
       {isStudent && (

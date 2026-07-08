@@ -1,5 +1,6 @@
 import milestonesData from "@/lib/data/pilot-milestones.json";
 import type { FlightHourTotals } from "@/lib/calculations/flight-hours";
+import { parseDateOnly } from "@/lib/dates";
 import { differenceInMonths, format } from "date-fns";
 
 export interface PilotMilestone {
@@ -41,7 +42,7 @@ export function getCareerProgressMarkers(): CareerProgressMarker[] {
 }
 
 export function getAge(birthDate: string, asOf = new Date()): number {
-  const birth = new Date(birthDate);
+  const birth = parseDateOnly(birthDate);
   let age = asOf.getFullYear() - birth.getFullYear();
   const monthDiff = asOf.getMonth() - birth.getMonth();
   if (monthDiff < 0 || (monthDiff === 0 && asOf.getDate() < birth.getDate())) {
@@ -110,7 +111,7 @@ export function getEligibilityDate(
   birthDate: string,
   minimumAge: number
 ): Date {
-  const birth = new Date(birthDate);
+  const birth = parseDateOnly(birthDate);
   return new Date(
     birth.getFullYear() + minimumAge,
     birth.getMonth(),
