@@ -58,8 +58,9 @@ export function FlightRoutePath({
               className={cn(
                 "flex items-center gap-2 rounded-lg border bg-background px-2.5 py-1.5 shadow-sm transition-colors",
                 canSelect &&
-                  "cursor-pointer hover:border-sky-300 hover:bg-sky-50/50",
-                isSelected && "border-sky-500 bg-sky-50/60 ring-1 ring-sky-500",
+                  "cursor-pointer hover:border-sky-300 hover:bg-sky-50/50 dark:hover:border-sky-600 dark:hover:bg-sky-950/40",
+                isSelected &&
+                  "border-sky-500 bg-sky-50/60 ring-1 ring-sky-500 dark:border-sky-400 dark:bg-sky-950/70 dark:ring-sky-400",
                 !canSelect && "cursor-default opacity-80"
               )}
             >
@@ -76,7 +77,14 @@ export function FlightRoutePath({
                 <p className="font-mono text-sm font-bold tracking-wide">
                   {stop.airport || "—"}
                 </p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                <p
+                  className={cn(
+                    "text-[10px] uppercase tracking-wider",
+                    isSelected
+                      ? "text-sky-800 dark:text-sky-200"
+                      : "text-muted-foreground"
+                  )}
+                >
                   {label}
                 </p>
               </div>
