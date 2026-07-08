@@ -56,3 +56,46 @@ export async function deleteExpense(id: string) {
   revalidatePath("/dashboard");
   return { success: true };
 }
+
+export async function updateExpense(id: string, formData: FormData) {
+  const supabase = await createClient();
+  const studentId = await getActiveStudentId();
+
+  const update: {
+    category: ExpenseCategory;
+    description: string | null;
+    amount: number;
+    date: string;
+    receipt_url?: string;
+  } = {
+    category: formData.get("category") as ExpenseCategory,
+    description: (formData.get("description") as string) || null,
+    amount: parseFloat(formData.get("amount") as string),
+    date: formData.get("date") as string,
+  };
+
+  const receipt = formData.get("receipt") as File | null;
+  if (receipt && receipt.size > 0) {
+    const path = `${studentId}/receipts/${Date.now()}-${receipt.name}`;
+    const { error: uploadError } = await supabase.storage
+      .from("receipts")
+      .upload(path, receipt);
+
+    if (uploadError) return { error: uploadError.message };
+
+    const { data } = supabase.storage.from("receipts").getPublicUrl(path);
+    update.receipt_url = data.publicUrl;
+  }
+
+  const { error } = await supabase
+    .from("expenses")
+    .update(update)
+    .eq("id", id)
+    .eq("user_id", studentId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/costs");
+  revalidatePath("/dashboard");
+  return { success: true };
+}

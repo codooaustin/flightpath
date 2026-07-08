@@ -28,16 +28,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { createExpense, deleteExpense } from "@/lib/actions/expenses";
+import {
+  createExpense,
+  deleteExpense,
+  updateExpense,
+} from "@/lib/actions/expenses";
 import {
   calculateExpensesByCategory,
   calculateTotalSpent,
   formatCurrency,
 } from "@/lib/calculations/costs";
+import { formatDateOnly, toDateInputValue } from "@/lib/dates";
 import { EXPENSE_CATEGORY_LABELS } from "@/types/models";
 import type { Expense, ExpenseCategory } from "@/types/models";
-import { format } from "date-fns";
-import { Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   BarChart,
@@ -54,19 +58,22 @@ interface CostsContentProps {
   isStudent: boolean;
 }
 
-export function CostsContent({ expenses, isStudent }: CostsContentProps) {
-  const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState<ExpenseCategory>("flight_training");
-  const [loading, setLoading] = useState(false);
-
-  const totalSpent = calculateTotalSpent(expenses);
-  const byCategory = calculateExpensesByCategory(expenses);
-  const chartData = Object.entries(byCategory).map(([cat, amount]) => ({
-    name: EXPENSE_CATEGORY_LABELS[cat as ExpenseCategory] ?? cat,
-    amount,
-  }));
-
-  async function handleCreate(formData: FormData) {
+function ExpenseForm({
+  expense,
+  category,
+  setCategory,
+  loading,
+  setLoading,
+  onSuccess,
+}: {
+  expense?: Expense;
+  category: ExpenseCategory;
+  setCategory: (category: ExpenseCategory) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+  onSuccess: () => void;
+}) {
+  async function handleSubmit(formData: FormData) {
     const receipt = formData.get("receipt") as File | null;
     const maxBytes = 9 * 1024 * 1024;
 
@@ -79,17 +86,123 @@ export function CostsContent({ expenses, isStudent }: CostsContentProps) {
     formData.set("category", category);
 
     try {
-      const result = await createExpense(formData);
+      const result = expense
+        ? await updateExpense(expense.id, formData)
+        : await createExpense(formData);
+
       if (result?.error) toast.error(result.error);
       else {
-        toast.success("Expense added");
-        setOpen(false);
+        toast.success(expense ? "Expense updated" : "Expense added");
+        onSuccess();
       }
     } catch {
       toast.error("Failed to save expense. Try a smaller receipt or try again.");
     } finally {
       setLoading(false);
     }
+  }
+
+  return (
+    <form action={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label>Category</Label>
+        <Select
+          value={category}
+          onValueChange={(value) => setCategory(value as ExpenseCategory)}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(EXPENSE_CATEGORY_LABELS).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="amount">Amount ($)</Label>
+        <Input
+          id="amount"
+          name="amount"
+          type="number"
+          step="0.01"
+          min="0"
+          defaultValue={expense?.amount ?? ""}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="date">Date</Label>
+        <Input
+          id="date"
+          name="date"
+          type="date"
+          defaultValue={
+            expense?.date
+              ? toDateInputValue(expense.date)
+              : new Date().toISOString().split("T")[0]
+          }
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          name="description"
+          defaultValue={expense?.description ?? ""}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="receipt">Receipt (optional)</Label>
+        <Input id="receipt" name="receipt" type="file" />
+        {expense?.receipt_url && (
+          <p className="text-xs text-muted-foreground">
+            Current receipt on file. Upload a new file to replace it.
+          </p>
+        )}
+      </div>
+      <Button type="submit" disabled={loading}>
+        {expense ? "Save Changes" : "Add Expense"}
+      </Button>
+    </form>
+  );
+}
+
+export function CostsContent({ expenses, isStudent }: CostsContentProps) {
+  const [open, setOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [category, setCategory] = useState<ExpenseCategory>("flight_training");
+  const [loading, setLoading] = useState(false);
+
+  const totalSpent = calculateTotalSpent(expenses);
+  const byCategory = calculateExpensesByCategory(expenses);
+  const chartData = Object.entries(byCategory).map(([cat, amount]) => ({
+    name: EXPENSE_CATEGORY_LABELS[cat as ExpenseCategory] ?? cat,
+    amount,
+  }));
+
+  function handleDialogChange(nextOpen: boolean) {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      setEditingExpense(null);
+      setCategory("flight_training");
+    }
+  }
+
+  function openCreate() {
+    setEditingExpense(null);
+    setCategory("flight_training");
+    setOpen(true);
+  }
+
+  function openEdit(expense: Expense) {
+    setEditingExpense(expense);
+    setCategory(expense.category);
+    setOpen(true);
   }
 
   async function handleDelete(id: string) {
@@ -108,10 +221,10 @@ export function CostsContent({ expenses, isStudent }: CostsContentProps) {
           </p>
         </div>
         {isStudent && (
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={open} onOpenChange={handleDialogChange}>
             <DialogTrigger
               render={
-                <Button>
+                <Button onClick={openCreate}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Expense
                 </Button>
@@ -119,62 +232,19 @@ export function CostsContent({ expenses, isStudent }: CostsContentProps) {
             />
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>New Expense</DialogTitle>
+                <DialogTitle>
+                  {editingExpense ? "Edit Expense" : "New Expense"}
+                </DialogTitle>
               </DialogHeader>
-              <form action={handleCreate} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Category</Label>
-                  <Select
-                    value={category}
-                    onValueChange={(v) => setCategory(v as ExpenseCategory)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(EXPENSE_CATEGORY_LABELS).map(
-                        ([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            {label}
-                          </SelectItem>
-                        )
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Amount ($)</Label>
-                  <Input
-                    id="amount"
-                    name="amount"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="date">Date</Label>
-                  <Input
-                    id="date"
-                    name="date"
-                    type="date"
-                    defaultValue={new Date().toISOString().split("T")[0]}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" name="description" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="receipt">Receipt (optional)</Label>
-                  <Input id="receipt" name="receipt" type="file" />
-                </div>
-                <Button type="submit" disabled={loading}>
-                  Add Expense
-                </Button>
-              </form>
+              <ExpenseForm
+                key={editingExpense?.id ?? "new"}
+                expense={editingExpense ?? undefined}
+                category={category}
+                setCategory={setCategory}
+                loading={loading}
+                setLoading={setLoading}
+                onSuccess={() => handleDialogChange(false)}
+              />
             </DialogContent>
           </Dialog>
         )}
@@ -233,7 +303,7 @@ export function CostsContent({ expenses, isStudent }: CostsContentProps) {
                 {expenses.map((expense) => (
                   <TableRow key={expense.id}>
                     <TableCell>
-                      {format(new Date(expense.date), "MMM d, yyyy")}
+                      {formatDateOnly(expense.date)}
                     </TableCell>
                     <TableCell>
                       {EXPENSE_CATEGORY_LABELS[expense.category]}
@@ -244,13 +314,24 @@ export function CostsContent({ expenses, isStudent }: CostsContentProps) {
                     </TableCell>
                     {isStudent && (
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(expense.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEdit(expense)}
+                            aria-label={`Edit expense from ${formatDateOnly(expense.date)}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(expense.id)}
+                            aria-label={`Delete expense from ${formatDateOnly(expense.date)}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     )}
                   </TableRow>
