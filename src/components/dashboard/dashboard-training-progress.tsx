@@ -41,6 +41,11 @@ export function DashboardTrainingProgress({
       ? Math.max(0, hourAccrual.primary.target - hourAccrual.primary.current)
       : null;
 
+  const certificateCompleted = certificateMission?.status === "completed";
+  const showAgeEligibility =
+    display?.milestone &&
+    !(display.certificate && certificateCompleted);
+
   return (
     <Card className="flex h-full flex-col">
       <CardHeader className="pb-3">
@@ -76,19 +81,9 @@ export function DashboardTrainingProgress({
               </p>
             </div>
             {certificateMission ? (
-              <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <MissionStatusBadge status={certificateMission.status} />
-                {certificateMission.status === "completed" ? (
-                  <p className="text-xs text-muted-foreground">
-                    Marked complete on{" "}
-                    <Link
-                      href="/missions"
-                      className="text-sky-600 hover:underline"
-                    >
-                      Missions
-                    </Link>
-                  </p>
-                ) : (
+                {certificateMission.status !== "completed" && (
                   <Link
                     href="/missions"
                     className="text-xs font-medium text-sky-600 hover:underline"
@@ -202,7 +197,7 @@ export function DashboardTrainingProgress({
                   <span className="font-medium">{age} years</span>
                 </p>
               )}
-              {display?.milestone && (
+              {showAgeEligibility && display?.milestone && (
                 <p className="text-muted-foreground">
                   {formatAgeEligibility(birthDate, display.milestone)}
                 </p>
