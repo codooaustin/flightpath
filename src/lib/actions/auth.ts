@@ -59,29 +59,88 @@ export async function updateProfile(formData: FormData) {
 
   if (!user) return { error: "Not authenticated" };
 
-  const birthDate = (formData.get("birth_date") as string) || null;
-  if (birthDate) {
-    const parsed = new Date(birthDate);
-    if (parsed > new Date()) {
-      return { error: "Birth date cannot be in the future" };
+  const updates: {
+    name?: string;
+    birth_date?: string | null;
+    home_airport?: string | null;
+    career_goal?: string | null;
+    target_airline?: string | null;
+  } = {};
+
+  if (formData.has("name")) {
+    const name = (formData.get("name") as string)?.trim();
+    if (!name) return { error: "Name is required" };
+    updates.name = name;
+  }
+
+  if (formData.has("birth_date")) {
+    const birthDate = (formData.get("birth_date") as string) || null;
+    if (birthDate) {
+      const parsed = new Date(birthDate);
+      if (parsed > new Date()) {
+        return { error: "Birth date cannot be in the future" };
+      }
     }
+    updates.birth_date = birthDate;
+  }
+
+  if (formData.has("home_airport")) {
+    const airport = (formData.get("home_airport") as string)
+      ?.trim()
+      .toUpperCase();
+    if (airport && !/^[A-Z0-9]{3,4}$/.test(airport)) {
+      return { error: "Home airport must be a 3-4 character ICAO/IATA code" };
+    }
+    updates.home_airport = airport || null;
+  }
+
+  if (formData.has("career_goal")) {
+    updates.career_goal = (formData.get("career_goal") as string) || null;
+  }
+
+  if (formData.has("target_airline")) {
+    updates.target_airline = (formData.get("target_airline") as string) || null;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return { success: true };
   }
 
   const { error } = await supabase
     .from("profiles")
-    .update({
-      name: formData.get("name") as string,
-      home_airport: (formData.get("home_airport") as string) || null,
-      career_goal: (formData.get("career_goal") as string) || null,
-      target_airline: (formData.get("target_airline") as string) || null,
-      birth_date: birthDate,
-    })
+    .update(updates)
     .eq("id", user.id);
 
   if (error) return { error: error.message };
 
   revalidatePath("/settings");
   revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function changePassword(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "Not authenticated" };
+
+  const newPassword = formData.get("new_password") as string;
+  const confirmPassword = formData.get("confirm_password") as string;
+
+  if (!newPassword || newPassword.length < 8) {
+    return { error: "Password must be at least 8 characters" };
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: "Passwords do not match" };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+  if (error) return { error: error.message };
+
   return { success: true };
 }
 
