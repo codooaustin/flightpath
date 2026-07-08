@@ -85,6 +85,15 @@ export async function buildFlightMapEntries(
   });
 }
 
+export function getMapPointForStop(
+  entry: FlightMapEntry,
+  stopIndex: number
+): FlightMapPoint | null {
+  const stop = entry.stops[stopIndex];
+  if (!stop?.airport) return null;
+  return entry.points.find((point) => point.code === stop.airport) ?? null;
+}
+
 export function getMapBounds(points: FlightMapPoint[]) {
   if (points.length === 0) return null;
 

@@ -150,12 +150,12 @@
   }
 
   .leaflet-popup.flight-map-popup .leaflet-popup-close-button {
-    top: 6px;
-    right: 6px;
-    width: 22px;
-    height: 22px;
-    font-size: 18px;
-    line-height: 20px;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    font-size: 14px;
+    line-height: 16px;
     color: var(--muted-foreground);
     border-radius: var(--radius-sm);
   }

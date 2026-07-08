@@ -59,15 +59,41 @@ export function getStopDisplay(
   };
 }
 
+function titleCase(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export function formatAirportName(name: string): string {
   return name
     .split("/")
-    .map((part) =>
-      part
-        .trim()
-        .toLowerCase()
-        .replace(/\b\w/g, (char) => char.toUpperCase())
-    )
+    .map((part) => titleCase(part))
     .filter(Boolean)
     .join(" · ");
+}
+
+export function parseAirportName(name: string): {
+  city: string | null;
+  airport: string | null;
+} {
+  const parts = name
+    .split("/")
+    .map((part) => titleCase(part))
+    .filter(Boolean);
+
+  if (parts.length === 0) {
+    return { city: null, airport: null };
+  }
+
+  if (parts.length === 1) {
+    return { city: null, airport: parts[0] };
+  }
+
+  const city = parts[0];
+  const airportParts = parts.slice(1).filter((part) => part !== city);
+  const airport = airportParts.join(" · ") || parts[1];
+
+  return { city, airport };
 }

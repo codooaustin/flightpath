@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { FlightRoutePath } from "@/components/flights/flight-route-path";
 import { formatHours } from "@/lib/calculations/flight-hours";
 import { formatDateOnly } from "@/lib/dates";
+import { getMapPointForStop } from "@/lib/flights/map-data";
 import type { FlightMapEntry } from "@/lib/flights/map-data";
 import { cn } from "@/lib/utils";
 import {
@@ -41,10 +42,28 @@ interface FlightLogCardProps {
 
 export function FlightLogCard({ entries }: FlightLogCardProps) {
   const [index, setIndex] = useState(0);
+  const [focusedStopIndex, setFocusedStopIndex] = useState<number | null>(null);
   const current = entries[index] ?? null;
   const hasMultiple = entries.length > 1;
   const canGoNewer = index > 0;
   const canGoOlder = index < entries.length - 1;
+  const focusedAirport =
+    current && focusedStopIndex != null
+      ? (current.stops[focusedStopIndex]?.airport ?? null)
+      : null;
+
+  useEffect(() => {
+    setFocusedStopIndex(null);
+  }, [index]);
+
+  function handleStopSelect(stopIndex: number) {
+    if (!current) return;
+    const point = getMapPointForStop(current, stopIndex);
+    if (!point) return;
+    setFocusedStopIndex((currentIndex) =>
+      currentIndex === stopIndex ? null : stopIndex
+    );
+  }
 
   return (
     <Card className="flex h-full flex-col overflow-hidden p-0">
@@ -69,6 +88,7 @@ export function FlightLogCard({ entries }: FlightLogCardProps) {
             <div className="relative bg-sky-50/40">
               <FlightRouteMap
                 entry={current}
+                focusedAirport={focusedAirport}
                 mapHeightClassName="h-52"
                 className="rounded-none border-0 border-b"
               />
@@ -117,7 +137,14 @@ export function FlightLogCard({ entries }: FlightLogCardProps) {
             </div>
 
             <div className="flex flex-1 flex-col gap-3 px-4 py-4">
-              <FlightRoutePath stops={current.stops} />
+              <FlightRoutePath
+                stops={current.stops}
+                selectedStopIndex={focusedStopIndex}
+                onStopSelect={handleStopSelect}
+                isStopSelectable={(stopIndex) =>
+                  getMapPointForStop(current, stopIndex) != null
+                }
+              />
 
               <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
