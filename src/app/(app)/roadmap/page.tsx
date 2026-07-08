@@ -14,6 +14,7 @@ export default async function RoadmapPage({
       stages={data.stages}
       missions={data.missions}
       userMissions={data.userMissions}
+      birthDate={data.studentProfile?.birth_date ?? null}
     />
   );
 }

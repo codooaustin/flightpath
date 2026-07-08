@@ -8,6 +8,10 @@ import type { FlightHourTotals } from "@/lib/calculations/flight-hours";
 import { formatHours } from "@/lib/calculations/flight-hours";
 import { formatAgeEligibility } from "@/lib/calculations/certification";
 import {
+  getMissionAgeBlockMessage,
+  isMissionBlockedByAge,
+} from "@/lib/missions/mission-eligibility";
+import {
   getStageCertificateMissionStatus,
   getStageTrainingDisplay,
 } from "@/lib/data/stage-guidance";
@@ -20,6 +24,7 @@ interface DashboardTrainingProgressProps {
   age: number | null;
   birthDate: string | null;
   userMissions: (UserMission & { mission?: Mission })[];
+  missions: Mission[];
 }
 
 export function DashboardTrainingProgress({
@@ -28,6 +33,7 @@ export function DashboardTrainingProgress({
   age,
   birthDate,
   userMissions,
+  missions,
 }: DashboardTrainingProgressProps) {
   const display = currentStage
     ? getStageTrainingDisplay(currentStage.name, hourTotals)
@@ -42,9 +48,21 @@ export function DashboardTrainingProgress({
       : null;
 
   const certificateCompleted = certificateMission?.status === "completed";
+  const certificateMissionRecord = missions.find(
+    (mission) => mission.title === display?.certificate?.relatedMissionTitle
+  );
+  const certificateAgeBlocked =
+    certificateMissionRecord != null &&
+    isMissionBlockedByAge(
+      birthDate,
+      certificateMissionRecord,
+      missions,
+      userMissions
+    );
   const showAgeEligibility =
     display?.milestone &&
-    !(display.certificate && certificateCompleted);
+    !(display.certificate && certificateCompleted) &&
+    !certificateAgeBlocked;
 
   return (
     <Card className="flex h-full flex-col">
@@ -81,16 +99,35 @@ export function DashboardTrainingProgress({
               </p>
             </div>
             {certificateMission ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <MissionStatusBadge status={certificateMission.status} />
-                {certificateMission.status !== "completed" && (
-                  <Link
-                    href="/missions"
-                    className="text-xs font-medium text-sky-600 hover:underline"
-                  >
-                    Complete mission →
-                  </Link>
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <MissionStatusBadge status={certificateMission.status} />
+                  {certificateMission.status !== "completed" &&
+                    !certificateAgeBlocked && (
+                      <Link
+                        href="/missions"
+                        className="text-xs font-medium text-sky-600 hover:underline"
+                      >
+                        Complete mission →
+                      </Link>
+                    )}
+                </div>
+                {certificateAgeBlocked && certificateMissionRecord && (
+                  <p className="text-xs text-amber-700 dark:text-amber-300">
+                    {getMissionAgeBlockMessage(
+                      birthDate,
+                      certificateMissionRecord.title
+                    )}
+                  </p>
                 )}
+                {!certificateAgeBlocked &&
+                  certificateMission.status === "locked" &&
+                  !certificateCompleted && (
+                    <p className="text-xs text-muted-foreground">
+                      Complete medical exam and ground school missions first.
+                      You can keep logging flight hours in the meantime.
+                    </p>
+                  )}
               </div>
             ) : (
               <p className="text-xs text-muted-foreground">

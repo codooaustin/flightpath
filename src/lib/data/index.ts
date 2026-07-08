@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getActiveStudentId } from "@/lib/auth";
 import { parseFlights } from "@/lib/flights/parse";
+import { syncAgeGatedMissionAvailability } from "@/lib/missions/sync-missions";
 import type { Mission, Profile, UserMission } from "@/types/models";
 
 function mergeUserMissions(
@@ -54,16 +55,31 @@ export async function getDashboardData(searchParams?: { student?: string }) {
   ]);
 
   const missionList = missions ?? [];
+  const mergedUserMissions = mergeUserMissions(userMissions ?? [], missionList);
+  const profile = (studentProfile as Profile | null) ?? null;
+
+  await syncAgeGatedMissionAvailability(
+    studentId,
+    profile?.birth_date ?? null,
+    missionList,
+    mergedUserMissions,
+    stages ?? []
+  );
+
+  const { data: refreshedUserMissions } = await supabase
+    .from("user_missions")
+    .select("*")
+    .eq("user_id", studentId);
 
   return {
     stages: stages ?? [],
     missions: missionList,
-    userMissions: mergeUserMissions(userMissions ?? [], missionList),
+    userMissions: mergeUserMissions(refreshedUserMissions ?? [], missionList),
     events: events ?? [],
     expenses: expenses ?? [],
     journal: journal ?? [],
     flights: parseFlights(flights ?? []),
-    studentProfile: (studentProfile as Profile | null) ?? null,
+    studentProfile: profile,
     studentId,
   };
 }
@@ -110,19 +126,39 @@ export async function getMissionsData(searchParams?: { student?: string }) {
   const supabase = await createClient();
   const studentId = await getActiveStudentId(searchParams);
 
-  const [{ data: stages }, { data: missions }, { data: userMissions }] =
-    await Promise.all([
-      supabase.from("stages").select("*").order("order_number"),
-      supabase.from("missions").select("*").order("order_number"),
-      supabase.from("user_missions").select("*").eq("user_id", studentId),
-    ]);
+  const [
+    { data: stages },
+    { data: missions },
+    { data: userMissions },
+    { data: studentProfile },
+  ] = await Promise.all([
+    supabase.from("stages").select("*").order("order_number"),
+    supabase.from("missions").select("*").order("order_number"),
+    supabase.from("user_missions").select("*").eq("user_id", studentId),
+    supabase.from("profiles").select("birth_date").eq("id", studentId).single(),
+  ]);
 
   const missionList = missions ?? [];
+  const mergedUserMissions = mergeUserMissions(userMissions ?? [], missionList);
+
+  await syncAgeGatedMissionAvailability(
+    studentId,
+    studentProfile?.birth_date ?? null,
+    missionList,
+    mergedUserMissions,
+    stages ?? []
+  );
+
+  const { data: refreshedUserMissions } = await supabase
+    .from("user_missions")
+    .select("*")
+    .eq("user_id", studentId);
 
   return {
     stages: stages ?? [],
     missions: missionList,
-    userMissions: mergeUserMissions(userMissions ?? [], missionList),
+    userMissions: mergeUserMissions(refreshedUserMissions ?? [], missionList),
+    studentProfile: studentProfile ?? null,
     studentId,
   };
 }

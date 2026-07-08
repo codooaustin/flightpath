@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Circle, Lock } from "lucide-react";
 import { MissionStatusBadge, getMissionSurfaceStyles, getMissionTitleStyles } from "@/components/missions/mission-status-badge";
+import { MissionAgeNotice } from "@/components/missions/mission-age-notice";
 import { MissionResourceLinks } from "@/components/missions/mission-resource-links";
 import { StageResourceLinks } from "@/components/missions/stage-resource-links";
 import {
@@ -21,12 +22,14 @@ interface RoadmapContentProps {
   stages: Stage[];
   missions: Mission[];
   userMissions: (UserMission & { mission?: Mission })[];
+  birthDate: string | null;
 }
 
 export function RoadmapContent({
   stages,
   missions,
   userMissions,
+  birthDate,
 }: RoadmapContentProps) {
   const [expandedStage, setExpandedStage] = useState<string | null>(null);
   const currentStage = getCurrentStage(stages, missions, userMissions);
@@ -160,6 +163,13 @@ export function RoadmapContent({
                             <MissionResourceLinks
                               missionTitle={mission.title}
                               compact
+                            />
+                            <MissionAgeNotice
+                              birthDate={birthDate}
+                              mission={mission}
+                              missions={missions}
+                              userMissions={userMissions}
+                              className="text-xs text-amber-700 dark:text-amber-300"
                             />
                           </li>
                         );

@@ -16,7 +16,9 @@ export default async function MissionsPage({
   return (
     <MissionsContent
       stages={data.stages}
+      missions={data.missions}
       userMissions={data.userMissions}
+      birthDate={data.studentProfile?.birth_date ?? null}
       isStudent={profile?.role === "student"}
     />
   );

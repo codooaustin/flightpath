@@ -109,6 +109,7 @@ export function DashboardContent({
               age={age}
               birthDate={studentProfile?.birth_date ?? null}
               userMissions={userMissions}
+              missions={missions}
             />
             <FlightLogCard entries={flightMapEntries} />
           </div>
