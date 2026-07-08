@@ -40,6 +40,27 @@ export function getMissionTitleStyles(status: MissionStatus, className?: string)
   return cn(missionTitleStyles[status], className);
 }
 
+export type StageTimelineStatus = "completed" | "current" | "locked";
+
+export const stageSurfaceStyles: Record<StageTimelineStatus, string> = {
+  locked: missionSurfaceStyles.locked,
+  current: missionSurfaceStyles.in_progress,
+  completed: missionSurfaceStyles.completed,
+};
+
+export const stageBadgeStyles: Record<StageTimelineStatus, string> = {
+  locked: statusStyles.locked,
+  current: statusStyles.in_progress,
+  completed: statusStyles.completed,
+};
+
+export function getStageSurfaceStyles(
+  status: StageTimelineStatus,
+  className?: string
+) {
+  return cn(stageSurfaceStyles[status], className);
+}
+
 export function MissionStatusBadge({
   status,
   className,

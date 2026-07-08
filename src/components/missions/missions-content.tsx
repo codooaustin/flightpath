@@ -18,6 +18,8 @@ import {
   MissionStatusBadge,
   getMissionSurfaceStyles,
   getMissionTitleStyles,
+  getStageSurfaceStyles,
+  stageBadgeStyles,
 } from "@/components/missions/mission-status-badge";
 import { MissionAgeNotice } from "@/components/missions/mission-age-notice";
 import { updateMissionStatus } from "@/lib/actions/missions";
@@ -245,11 +247,7 @@ export function MissionsContent({
               return (
                 <Card
                   key={stage.id}
-                  className={cn(
-                    stageStatus === "locked" && "opacity-80",
-                    stageStatus === "current" &&
-                      "border-sky-200 dark:border-sky-800"
-                  )}
+                  className={getStageSurfaceStyles(stageStatus, "transition-shadow")}
                 >
                   <CardHeader
                     className="cursor-pointer pb-2"
@@ -259,13 +257,8 @@ export function MissionsContent({
                       <CardTitle className="text-lg">{stage.name}</CardTitle>
                       <div className="flex items-center gap-2">
                         <Badge
-                          variant={
-                            stageStatus === "completed"
-                              ? "default"
-                              : stageStatus === "current"
-                                ? "secondary"
-                                : "outline"
-                          }
+                          variant="outline"
+                          className={stageBadgeStyles[stageStatus]}
                         >
                           {progress.percentage}%
                         </Badge>

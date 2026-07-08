@@ -21,6 +21,8 @@ import {
   MissionStatusBadge,
   getMissionSurfaceStyles,
   getMissionTitleStyles,
+  getStageSurfaceStyles,
+  stageBadgeStyles,
 } from "@/components/missions/mission-status-badge";
 import { MissionAgeNotice } from "@/components/missions/mission-age-notice";
 import { RoadmapHero } from "@/components/roadmap/roadmap-hero";
@@ -152,9 +154,9 @@ export function RoadmapContent({
                     className={cn(
                       "relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2",
                       status === "completed" &&
-                        "border-green-500 bg-green-50 text-green-600 dark:bg-green-950/30",
+                        "border-green-500 bg-green-50 text-green-600 dark:border-green-700 dark:bg-green-950/30",
                       status === "current" &&
-                        "border-sky-500 bg-sky-50 text-sky-600 dark:bg-sky-950/30",
+                        "border-amber-500 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950/30",
                       status === "locked" &&
                         "border-muted bg-muted text-muted-foreground"
                     )}
@@ -168,9 +170,9 @@ export function RoadmapContent({
                     )}
                   </div>
                   <Card
-                    className={cn(
-                      "flex-1",
-                      status === "current" && "border-sky-200 dark:border-sky-800"
+                    className={getStageSurfaceStyles(
+                      status,
+                      "flex-1 transition-shadow"
                     )}
                   >
                     <CardHeader
@@ -183,13 +185,8 @@ export function RoadmapContent({
                         <CardTitle className="text-lg">{stage.name}</CardTitle>
                         <div className="flex items-center gap-2">
                           <Badge
-                            variant={
-                              status === "completed"
-                                ? "default"
-                                : status === "current"
-                                  ? "secondary"
-                                  : "outline"
-                            }
+                            variant="outline"
+                            className={stageBadgeStyles[status]}
                           >
                             {progress.percentage}%
                           </Badge>
