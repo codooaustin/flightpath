@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateProfile, linkStudent, unlinkStudent } from "@/lib/actions/auth";
+import { ProfileAvatarUpload } from "@/components/settings/profile-avatar-upload";
 import { SignOutButton } from "@/components/sign-out-button";
 import { FaaHelpTip, FaaResourceLinks } from "@/components/certification/faa-help-tip";
 import { FAA_RESOURCES } from "@/lib/data/faa-resources";
@@ -62,7 +63,8 @@ export function SettingsContent({
         <CardHeader>
           <CardTitle>Profile</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
+          <ProfileAvatarUpload profile={profile} />
           <form action={handleProfileUpdate} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>

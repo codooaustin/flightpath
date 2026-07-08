@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -78,12 +78,6 @@ function NavLinks({ pathname }: { pathname: string }) {
 
 export function AppSidebar({ profile, logo }: AppSidebarProps) {
   const pathname = usePathname();
-  const initials = profile?.name
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2) ?? "?";
 
   return (
     <>
@@ -98,9 +92,7 @@ export function AppSidebar({ profile, logo }: AppSidebarProps) {
               className="w-full"
               render={
                 <Button variant="ghost" className="w-full justify-start gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>{initials}</AvatarFallback>
-                  </Avatar>
+                  <ProfileAvatar profile={profile} className="h-8 w-8" />
                   <div className="flex flex-col items-start text-left">
                     <span className="text-sm font-medium">{profile?.name}</span>
                     <span className="text-xs capitalize text-muted-foreground">
