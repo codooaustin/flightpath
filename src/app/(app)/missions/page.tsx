@@ -5,7 +5,7 @@ import { MissionsContent } from "@/components/missions/missions-content";
 export default async function MissionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ student?: string }>;
+  searchParams: Promise<{ student?: string; open?: string; view?: string }>;
 }) {
   const params = await searchParams;
   const [data, profile] = await Promise.all([
@@ -20,6 +20,7 @@ export default async function MissionsPage({
       userMissions={data.userMissions}
       birthDate={data.studentProfile?.birth_date ?? null}
       isStudent={profile?.role === "student"}
+      initialOpenMissionId={params.open ?? null}
     />
   );
 }
