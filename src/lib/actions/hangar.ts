@@ -50,14 +50,43 @@ export async function uploadFile(formData: FormData) {
   return { success: true };
 }
 
-export async function deleteFile(id: string, filePath: string, bucket: string) {
+export async function updateFile(
+  id: string,
+  formData: FormData
+) {
   const supabase = await createClient();
   const studentId = await getActiveStudentId();
 
-  const storagePath = resolveStoragePath(filePath, bucket);
+  const { error } = await supabase
+    .from("files")
+    .update({
+      description: (formData.get("description") as string) || null,
+    })
+    .eq("id", id)
+    .eq("user_id", studentId);
 
-  if (storagePath) {
-    await supabase.storage.from(bucket).remove([storagePath]);
+  if (error) return { error: error.message };
+
+  revalidatePath("/hangar");
+  return { success: true };
+}
+
+export async function deleteFile(id: string) {
+  const supabase = await createClient();
+  const studentId = await getActiveStudentId();
+
+  const { data: file } = await supabase
+    .from("files")
+    .select("file_url, bucket")
+    .eq("id", id)
+    .eq("user_id", studentId)
+    .single();
+
+  if (file) {
+    const storagePath = resolveStoragePath(file.file_url, file.bucket);
+    if (storagePath) {
+      await supabase.storage.from(file.bucket).remove([storagePath]);
+    }
   }
 
   const { error } = await supabase

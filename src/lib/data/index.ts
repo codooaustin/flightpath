@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveStudentId } from "@/lib/auth";
 import { parseFlights } from "@/lib/flights/parse";
 import { syncAgeGatedMissionAvailability } from "@/lib/missions/sync-missions";
-import { withSignedReceiptUrls } from "@/lib/supabase/storage";
+import { withSignedFileUrls, withSignedReceiptUrls } from "@/lib/supabase/storage";
 import type { Mission, Profile, UserMission } from "@/types/models";
 
 function mergeUserMissions(
@@ -282,6 +282,58 @@ export async function getCostsData(searchParams?: { student?: string }) {
   return {
     expenses: expensesWithReceipts,
     flights: parseFlights(flights ?? []),
+    stages: stages ?? [],
+    missions: missionList,
+    userMissions: mergeUserMissions(refreshedUserMissions ?? [], missionList),
+    studentProfile: studentProfile ?? null,
+    studentId,
+  };
+}
+
+export async function getHangarData(searchParams?: {
+  student?: string;
+}) {
+  const supabase = await createClient();
+  const studentId = await getActiveStudentId(searchParams);
+
+  const [
+    { data: files },
+    { data: stages },
+    { data: missions },
+    { data: userMissions },
+    { data: studentProfile },
+  ] = await Promise.all([
+    supabase
+      .from("files")
+      .select("*")
+      .eq("user_id", studentId)
+      .order("created_at", { ascending: false }),
+    supabase.from("stages").select("*").order("order_number"),
+    supabase.from("missions").select("*").order("order_number"),
+    supabase.from("user_missions").select("*").eq("user_id", studentId),
+    supabase.from("profiles").select("birth_date").eq("id", studentId).single(),
+  ]);
+
+  const missionList = missions ?? [];
+  const mergedUserMissions = mergeUserMissions(userMissions ?? [], missionList);
+
+  await syncAgeGatedMissionAvailability(
+    studentId,
+    studentProfile?.birth_date ?? null,
+    missionList,
+    mergedUserMissions,
+    stages ?? []
+  );
+
+  const { data: refreshedUserMissions } = await supabase
+    .from("user_missions")
+    .select("*")
+    .eq("user_id", studentId);
+
+  const filesWithUrls = await withSignedFileUrls(supabase, files ?? []);
+
+  return {
+    files: filesWithUrls,
     stages: stages ?? [],
     missions: missionList,
     userMissions: mergeUserMissions(refreshedUserMissions ?? [], missionList),

@@ -1,30 +1,47 @@
-import { createClient } from "@/lib/supabase/server";
-import { getActiveStudentId, getCurrentProfile } from "@/lib/auth";
-import { withSignedFileUrls } from "@/lib/supabase/storage";
+import { getCurrentProfile } from "@/lib/auth";
+import { getHangarData } from "@/lib/data";
 import { HangarContent } from "@/components/hangar/hangar-content";
+import type { FileCategory } from "@/types/models";
+
+const VALID_CATEGORIES = new Set([
+  "all",
+  "certificates",
+  "photos",
+  "aircraft",
+  "equipment",
+  "documents",
+]);
 
 export default async function HangarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ student?: string }>;
+  searchParams: Promise<{
+    student?: string;
+    category?: string;
+    open?: string;
+    new?: string;
+  }>;
 }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const studentId = await getActiveStudentId(params);
   const profile = await getCurrentProfile();
+  const data = await getHangarData(params);
 
-  const { data: files } = await supabase
-    .from("files")
-    .select("*")
-    .eq("user_id", studentId)
-    .order("created_at", { ascending: false });
-
-  const filesWithUrls = await withSignedFileUrls(supabase, files ?? []);
+  const category =
+    params.category && VALID_CATEGORIES.has(params.category)
+      ? (params.category as FileCategory | "all")
+      : "all";
 
   return (
     <HangarContent
-      files={filesWithUrls}
+      files={data.files}
+      missions={data.missions}
+      userMissions={data.userMissions}
+      stages={data.stages}
+      birthDate={data.studentProfile?.birth_date ?? null}
       isStudent={profile?.role === "student"}
+      initialCategory={category}
+      initialOpenFileId={params.open ?? null}
+      initialOpenNew={params.new === "1"}
     />
   );
 }
