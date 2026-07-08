@@ -94,7 +94,7 @@ export function FlightRoutePath({ stops, className }: FlightRoutePathProps) {
                 <p className="font-mono text-sm font-bold tracking-wide">
                   {stop.airport || "—"}
                 </p>
-                <p className="text-[10px] tracking-wide text-muted-foreground">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
                   {label}
                 </p>
               </div>

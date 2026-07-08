@@ -1,13 +1,8 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { FlightProgress } from "@/components/dashboard/flight-progress";
 import { FaaHelpTip } from "@/components/certification/faa-help-tip";
-import {
-  MissionStatusBadge,
-  getMissionSurfaceStyles,
-} from "@/components/missions/mission-status-badge";
 import type { FlightHourTotals } from "@/lib/calculations/flight-hours";
 import { formatHours } from "@/lib/calculations/flight-hours";
 import {
@@ -15,13 +10,11 @@ import {
   formatTypicalHourRange,
 } from "@/lib/calculations/certification";
 import { getStageHourGuidance } from "@/lib/data/stage-guidance";
-import type { Mission, Stage, UserMission } from "@/types/models";
-import { Award, Plane, Target } from "lucide-react";
+import type { Stage } from "@/types/models";
+import { Award } from "lucide-react";
 
 interface DashboardTrainingProgressProps {
   currentStage: Stage | null;
-  stageProgress: { completed: number; total: number; percentage: number };
-  nextMission: (UserMission & { mission?: Mission }) | null;
   hourTotals: FlightHourTotals;
   age: number | null;
   birthDate: string | null;
@@ -29,8 +22,6 @@ interface DashboardTrainingProgressProps {
 
 export function DashboardTrainingProgress({
   currentStage,
-  stageProgress,
-  nextMission,
   hourTotals,
   age,
   birthDate,
@@ -66,56 +57,6 @@ export function DashboardTrainingProgress({
       </CardHeader>
 
       <CardContent className="flex flex-1 flex-col gap-4">
-        <section className="space-y-3 rounded-lg border bg-muted/30 p-3">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Current focus
-          </p>
-
-          <div className="space-y-2">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <p className="flex items-center gap-1.5 text-sm font-medium">
-                  <Target className="h-3.5 w-3.5 shrink-0 text-sky-600" />
-                  {currentStage?.name ?? "Getting started"}
-                </p>
-                {currentStage?.description && (
-                  <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-                    {currentStage.description}
-                  </p>
-                )}
-              </div>
-              <Badge variant="secondary" className="shrink-0">
-                {stageProgress.completed}/{stageProgress.total} missions
-              </Badge>
-            </div>
-
-            {nextMission?.mission ? (
-              <Link
-                href="/missions"
-                className={getMissionSurfaceStyles(
-                  nextMission.status,
-                  "block rounded-lg border p-2.5 transition-opacity hover:opacity-90"
-                )}
-              >
-                <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <Plane className="h-3.5 w-3.5 text-sky-600" />
-                  Next mission
-                </p>
-                <p className="mt-1 font-medium leading-snug">
-                  {nextMission.mission.title}
-                </p>
-                <div className="mt-1.5">
-                  <MissionStatusBadge status={nextMission.status} />
-                </div>
-              </Link>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                All missions in this stage are landed.
-              </p>
-            )}
-          </div>
-        </section>
-
         {guidance && primaryRequirement ? (
           <section className="space-y-3">
             <div>

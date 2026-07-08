@@ -105,8 +105,6 @@ export function DashboardContent({
           <div className="grid gap-4 lg:grid-cols-2 lg:items-stretch">
             <DashboardTrainingProgress
               currentStage={currentStage}
-              stageProgress={progress}
-              nextMission={nextMission}
               hourTotals={hourTotals}
               age={age}
               birthDate={studentProfile?.birth_date ?? null}

@@ -128,7 +128,7 @@ export function formatAgeEligibility(
 
   const age = getAge(birthDate);
   if (isAgeEligible(age, milestone)) {
-    return "Age eligible now";
+    return `Age eligible for ${milestone.name} now`;
   }
 
   const eligibilityDate = getEligibilityDate(birthDate, milestone.minimum_age);
@@ -136,10 +136,10 @@ export function formatAgeEligibility(
   const dateLabel = format(eligibilityDate, "MMM d, yyyy");
 
   if (monthsUntil <= 0) {
-    return `Eligible at age ${milestone.minimum_age} (${dateLabel})`;
+    return `Eligible for ${milestone.name} at age ${milestone.minimum_age} (${dateLabel})`;
   }
 
-  return `Eligible at age ${milestone.minimum_age} (in ${monthsUntil} month${monthsUntil === 1 ? "" : "s"})`;
+  return `Eligible for ${milestone.name} at age ${milestone.minimum_age} (in ${monthsUntil} month${monthsUntil === 1 ? "" : "s"})`;
 }
 
 export function getNextHourAchievement(totalHours: number): {
