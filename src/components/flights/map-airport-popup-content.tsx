@@ -32,7 +32,7 @@ export function MapAirportPopupContent({
         >
           <Icon className="h-2.5 w-2.5" aria-hidden />
         </span>
-        <p className="font-mono text-xs font-bold leading-none tracking-wide">
+        <p className="font-mono text-xs font-bold leading-none tracking-wide text-popover-foreground">
           {point.code}
         </p>
         <span
@@ -45,7 +45,7 @@ export function MapAirportPopupContent({
         </span>
       </div>
       {airport && (
-        <p className="mt-0.5 break-words pl-5 text-[10px] leading-snug text-foreground">
+        <p className="mt-0.5 break-words pl-5 text-[10px] leading-snug text-muted-foreground">
           {airport}
         </p>
       )}
