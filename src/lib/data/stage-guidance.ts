@@ -92,6 +92,11 @@ export function getStageTrainingDisplay(
   if (!guidance) return null;
 
   if (guidance.milestone.id === "student_pilot") {
+    const hourRequirement =
+      guidance.requirements.find(
+        (requirement) => requirement.label === "Typical training hours"
+      ) ?? guidance.requirements[0] ?? null;
+
     return {
       sectionTitle: "Stage requirements",
       headline: guidance.milestone.name,
@@ -103,7 +108,7 @@ export function getStageTrainingDisplay(
       milestone: guidance.milestone,
       mode: "certificate",
       hoursLogged: totals.total,
-      primaryRequirement: null,
+      primaryRequirement: hourRequirement,
       additionalRequirements: [],
     };
   }

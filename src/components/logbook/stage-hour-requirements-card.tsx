@@ -59,34 +59,25 @@ export function StageHourRequirementsCard({
               )}
             </div>
 
-            {display.mode === "certificate" ? (
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">
-                  {formatHours(display.hoursLogged)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Total hours logged
-                </p>
-              </div>
-            ) : (
+            {display.primaryRequirement ? (
               <div className="space-y-3">
-                {display.primaryRequirement && (
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {display.primaryRequirement.label}
-                      </span>
-                      <span className="font-medium">
-                        {formatHours(display.primaryRequirement.current)} /{" "}
-                        {formatHours(display.primaryRequirement.target)} hrs
-                      </span>
-                    </div>
-                    <Progress
-                      value={display.primaryRequirement.percent}
-                      className="h-1.5"
-                    />
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {display.mode === "certificate"
+                        ? "Hours logged toward early training"
+                        : display.primaryRequirement.label}
+                    </span>
+                    <span className="font-medium">
+                      {formatHours(display.primaryRequirement.current)} /{" "}
+                      {formatHours(display.primaryRequirement.target)} hrs
+                    </span>
                   </div>
-                )}
+                  <Progress
+                    value={display.primaryRequirement.percent}
+                    className="h-1.5"
+                  />
+                </div>
                 {display.additionalRequirements.map((requirement) => (
                   <div key={requirement.label} className="space-y-1.5">
                     <div className="flex items-center justify-between text-sm">
@@ -101,6 +92,15 @@ export function StageHourRequirementsCard({
                     <Progress value={requirement.percent} className="h-1.5" />
                   </div>
                 ))}
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <p className="text-2xl font-bold">
+                  {formatHours(display.hoursLogged)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Total hours logged
+                </p>
               </div>
             )}
 

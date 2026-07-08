@@ -72,16 +72,7 @@ export function DashboardTrainingProgress({
               )}
             </div>
 
-            {display.mode === "certificate" ? (
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">
-                  {formatHours(display.hoursLogged)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Total hours logged — keep building time toward solo readiness
-                </p>
-              </div>
-            ) : primaryRequirement ? (
+            {primaryRequirement ? (
               <div className="space-y-2">
                 <div className="flex items-end justify-between gap-2">
                   <div>
@@ -89,7 +80,9 @@ export function DashboardTrainingProgress({
                       {formatHours(primaryRequirement.current)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {primaryRequirement.label}
+                      {display.mode === "certificate"
+                        ? "Hours logged toward early training"
+                        : primaryRequirement.label}
                     </p>
                   </div>
                   <p className="text-right text-sm font-medium">
@@ -100,11 +93,23 @@ export function DashboardTrainingProgress({
                 <FlightProgress value={primaryRequirement.percent} />
                 {hoursRemaining != null && hoursRemaining > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    {formatHours(hoursRemaining)} remaining to target
+                    {formatHours(hoursRemaining)}{" "}
+                    {display.mode === "certificate"
+                      ? "remaining to typical early training range"
+                      : "remaining to target"}
                   </p>
                 )}
               </div>
-            ) : null}
+            ) : (
+              <div className="space-y-1">
+                <p className="text-2xl font-bold">
+                  {formatHours(display.hoursLogged)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Total hours logged
+                </p>
+              </div>
+            )}
           </section>
         ) : (
           <section className="space-y-2">
