@@ -89,6 +89,7 @@ export function FlightLogCard({ entries }: FlightLogCardProps) {
               <FlightRouteMap
                 entry={current}
                 focusedAirport={focusedAirport}
+                onFocusedAirportClear={() => setFocusedStopIndex(null)}
                 mapHeightClassName="h-52"
                 className="rounded-none border-0 border-b"
               />

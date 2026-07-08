@@ -87,6 +87,30 @@ function ScrollWheelZoomOnHover() {
   return null;
 }
 
+function DismissPopupOnMapClick({
+  onDismiss,
+}: {
+  onDismiss?: () => void;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!onDismiss) return;
+
+    const handleMapClick = () => {
+      map.closePopup();
+      onDismiss();
+    };
+
+    map.on("click", handleMapClick);
+    return () => {
+      map.off("click", handleMapClick);
+    };
+  }, [map, onDismiss]);
+
+  return null;
+}
+
 function AirportMarker({
   point,
   index,
@@ -103,8 +127,11 @@ function AirportMarker({
   const markerRef = useRef<L.Marker>(null);
 
   useEffect(() => {
-    if (!focused) return;
-    markerRef.current?.openPopup();
+    if (focused) {
+      markerRef.current?.openPopup();
+      return;
+    }
+    markerRef.current?.closePopup();
   }, [focused]);
 
   const icon = useMemo(
@@ -114,7 +141,12 @@ function AirportMarker({
 
   return (
     <Marker ref={markerRef} position={[point.lat, point.lng]} icon={icon}>
-      <Popup className="flight-map-popup" minWidth={0} maxWidth={200}>
+      <Popup
+        className="flight-map-popup"
+        minWidth={0}
+        maxWidth={200}
+        closeButton={false}
+      >
         <MapAirportPopupContent point={point} index={index} total={total} />
       </Popup>
     </Marker>
@@ -124,6 +156,7 @@ function AirportMarker({
 interface FlightRouteMapProps {
   entry: FlightMapEntry | null;
   focusedAirport?: string | null;
+  onFocusedAirportClear?: () => void;
   className?: string;
   mapHeightClassName?: string;
 }
@@ -131,6 +164,7 @@ interface FlightRouteMapProps {
 export function FlightRouteMap({
   entry,
   focusedAirport = null,
+  onFocusedAirportClear,
   className,
   mapHeightClassName = "h-48",
 }: FlightRouteMapProps) {
@@ -181,6 +215,7 @@ export function FlightRouteMap({
         attributionControl={false}
       >
         <ScrollWheelZoomOnHover />
+        <DismissPopupOnMapClick onDismiss={onFocusedAirportClear} />
         {tileLayers.map((layer) => (
           <TileLayer key={layer.url} url={layer.url} />
         ))}

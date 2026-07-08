@@ -158,20 +158,7 @@
 }
 
 .flight-route-map .leaflet-popup.flight-map-popup .leaflet-popup-close-button {
-  top: 2px;
-  right: 2px;
-  width: 14px;
-  height: 14px;
-  font-size: 12px;
-  line-height: 12px;
-  color: var(--muted-foreground);
-  border-radius: var(--radius-sm);
-  padding: 0;
-}
-
-.flight-route-map .leaflet-popup.flight-map-popup .leaflet-popup-close-button:hover {
-  color: var(--foreground);
-  background: var(--muted);
+  display: none;
 }
 
 .flight-route-map .leaflet-popup.flight-map-popup .leaflet-popup-tip {

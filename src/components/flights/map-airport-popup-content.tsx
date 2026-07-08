@@ -22,7 +22,7 @@ export function MapAirportPopupContent({
   const airport = point.name ? parseAirportName(point.name).airport : null;
 
   return (
-    <div className="min-w-[112px] max-w-[188px] py-0.5 pl-1.5 pr-4">
+    <div className="min-w-[112px] max-w-[188px] px-1.5 py-0.5">
       <div className="flex items-center gap-1">
         <span
           className={cn(
