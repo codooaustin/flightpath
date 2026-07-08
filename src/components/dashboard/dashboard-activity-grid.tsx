@@ -3,13 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/calculations/costs";
 import { formatDateOnly } from "@/lib/dates";
-import { FlightLogCard } from "@/components/dashboard/flight-log-card";
 import { EVENT_TYPE_LABELS } from "@/types/models";
-import type { CalendarEvent, Expense, Flight, JournalEntry } from "@/types/models";
+import type { CalendarEvent, JournalEntry } from "@/types/models";
 import { BookOpen, Calendar, DollarSign } from "lucide-react";
 
 interface DashboardActivityGridProps {
-  flights: Flight[];
   events: CalendarEvent[];
   journal: JournalEntry[];
   totalSpent: number;
@@ -17,7 +15,6 @@ interface DashboardActivityGridProps {
 }
 
 export function DashboardActivityGrid({
-  flights,
   events,
   journal,
   totalSpent,
@@ -27,8 +24,6 @@ export function DashboardActivityGrid({
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <FlightLogCard flights={flights} limit={3} />
-
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between gap-2">

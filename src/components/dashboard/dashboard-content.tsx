@@ -22,13 +22,14 @@ import {
   getSupplementalFaaResources,
 } from "@/lib/data/faa-resources";
 import { DashboardHero } from "@/components/dashboard/dashboard-hero";
-import { DashboardKpiStrip } from "@/components/dashboard/dashboard-kpi-strip";
 import { DashboardActivityGrid } from "@/components/dashboard/dashboard-activity-grid";
 import { DashboardTrainingProgress } from "@/components/dashboard/dashboard-training-progress";
+import { FlightLogCard } from "@/components/dashboard/flight-log-card";
 import {
   DashboardFaaMobileButton,
   DashboardFaaSidebar,
 } from "@/components/dashboard/dashboard-faa-sidebar";
+import type { FlightMapEntry } from "@/lib/flights/map-data";
 import type {
   CalendarEvent,
   Expense,
@@ -48,6 +49,7 @@ interface DashboardContentProps {
   expenses: Expense[];
   journal: JournalEntry[];
   flights: Flight[];
+  flightMapEntries: FlightMapEntry[];
   studentProfile: Profile | null;
 }
 
@@ -59,6 +61,7 @@ export function DashboardContent({
   expenses,
   journal,
   flights,
+  flightMapEntries,
   studentProfile,
 }: DashboardContentProps) {
   const progress = calculateProgress(userMissions);
@@ -115,31 +118,26 @@ export function DashboardContent({
             nextMission={nextMission}
           />
 
-          <DashboardKpiStrip
-            totalHours={hourTotals.total}
-            totalSpent={totalSpent}
-            nextEvent={events[0] ?? null}
-            stagePercentage={progress.percentage}
-          />
+          <div className="grid gap-4 lg:grid-cols-2 lg:items-stretch">
+            <DashboardTrainingProgress
+              totalHours={hourTotals.total}
+              nextMilestone={nextMilestone}
+              milestoneTarget={milestoneTarget}
+              milestoneProgress={milestoneProgress}
+              nextAchievement={nextAchievement}
+              careerMarker={careerMarker}
+              age={age}
+              birthDate={studentProfile?.birth_date ?? null}
+              instrumentProgress={instrumentProgress}
+            />
+            <FlightLogCard entries={flightMapEntries} />
+          </div>
 
           <DashboardActivityGrid
-            flights={flights}
             events={events}
             journal={journal}
             totalSpent={totalSpent}
             estimatedRemaining={estimatedRemaining}
-          />
-
-          <DashboardTrainingProgress
-            totalHours={hourTotals.total}
-            nextMilestone={nextMilestone}
-            milestoneTarget={milestoneTarget}
-            milestoneProgress={milestoneProgress}
-            nextAchievement={nextAchievement}
-            careerMarker={careerMarker}
-            age={age}
-            birthDate={studentProfile?.birth_date ?? null}
-            instrumentProgress={instrumentProgress}
           />
         </div>
 

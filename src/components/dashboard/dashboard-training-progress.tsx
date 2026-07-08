@@ -40,7 +40,7 @@ export function DashboardTrainingProgress({
   instrumentProgress,
 }: DashboardTrainingProgressProps) {
   return (
-    <Card>
+    <Card className="flex h-full flex-col">
       <CardHeader>
         <CardTitle className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-2">
