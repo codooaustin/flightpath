@@ -1,27 +1,29 @@
-import { createClient } from "@/lib/supabase/server";
-import { getActiveStudentId, getCurrentProfile } from "@/lib/auth";
+import { getCalendarData } from "@/lib/data";
+import { getCurrentProfile } from "@/lib/auth";
 import { CalendarContent } from "@/components/calendar/calendar-content";
 
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ student?: string }>;
+  searchParams: Promise<{ student?: string; date?: string; open?: string }>;
 }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const studentId = await getActiveStudentId(params);
-  const profile = await getCurrentProfile();
-
-  const { data: events } = await supabase
-    .from("calendar_events")
-    .select("*")
-    .eq("user_id", studentId)
-    .order("start_date");
+  const [data, profile] = await Promise.all([
+    getCalendarData(params),
+    getCurrentProfile(),
+  ]);
 
   return (
     <CalendarContent
-      events={events ?? []}
+      events={data.events}
+      flights={data.flights}
+      stages={data.stages}
+      missions={data.missions}
+      userMissions={data.userMissions}
+      birthDate={data.studentProfile?.birth_date ?? null}
       isStudent={profile?.role === "student"}
+      initialDate={params.date ?? null}
+      initialOpenEventId={params.open ?? null}
     />
   );
 }
