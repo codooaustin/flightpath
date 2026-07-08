@@ -12,7 +12,7 @@ import {
 import L from "leaflet";
 import type { FlightMapEntry, FlightMapPoint } from "@/lib/flights/map-data";
 import { getMapBounds } from "@/lib/flights/map-data";
-import { FLIGHT_STOP_LABELS } from "@/lib/flights/route";
+import { MapAirportPopupContent } from "@/components/flights/map-airport-popup-content";
 import "leaflet/dist/leaflet.css";
 
 const markerIcon = L.divIcon({
@@ -79,20 +79,22 @@ export function FlightRouteMap({
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <FitBounds points={entry.points} />
         <Polyline positions={positions} color="#0284c7" weight={3} opacity={0.85} />
-        {entry.points.map((point) => (
+        {entry.points.map((point, index) => (
           <Marker
             key={`${point.code}-${point.stop_type}-${point.lat}`}
             position={[point.lat, point.lng]}
             icon={markerIcon}
           >
-            <Popup>
-              <div className="text-sm">
-                <p className="font-semibold">{point.code}</p>
-                {point.name && (
-                  <p className="text-muted-foreground">{point.name}</p>
-                )}
-                <p>{FLIGHT_STOP_LABELS[point.stop_type]}</p>
-              </div>
+            <Popup
+              className="flight-map-popup"
+              minWidth={220}
+              maxWidth={280}
+            >
+              <MapAirportPopupContent
+                point={point}
+                index={index}
+                total={entry.points.length}
+              />
             </Popup>
           </Marker>
         ))}

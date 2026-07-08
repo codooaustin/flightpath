@@ -1,56 +1,7 @@
-import {
-  FLIGHT_STOP_LABELS,
-  type FlightRouteStop,
-} from "@/lib/flights/route";
+import type { FlightRouteStop } from "@/lib/flights/route";
+import { getStopDisplay } from "@/lib/flights/stop-display";
 import { cn } from "@/lib/utils";
-import {
-  ArrowRight,
-  CircleDot,
-  MapPin,
-  PlaneLanding,
-  PlaneTakeoff,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-
-function stopIcon(
-  stop: FlightRouteStop,
-  index: number,
-  total: number
-): { icon: LucideIcon; label: string; className: string } {
-  if (index === 0 && stop.stop_type === "departure") {
-    return {
-      icon: PlaneTakeoff,
-      label: "Departure",
-      className: "bg-sky-100 text-sky-700",
-    };
-  }
-  if (index === total - 1 && stop.stop_type === "landing") {
-    return {
-      icon: PlaneLanding,
-      label: "Landing",
-      className: "bg-emerald-100 text-emerald-700",
-    };
-  }
-  if (stop.stop_type === "touch_and_go") {
-    return {
-      icon: CircleDot,
-      label: FLIGHT_STOP_LABELS.touch_and_go,
-      className: "bg-amber-100 text-amber-700",
-    };
-  }
-  if (stop.stop_type === "full_stop") {
-    return {
-      icon: MapPin,
-      label: FLIGHT_STOP_LABELS.full_stop,
-      className: "bg-violet-100 text-violet-700",
-    };
-  }
-  return {
-    icon: MapPin,
-    label: "Stop",
-    className: "bg-muted text-muted-foreground",
-  };
-}
+import { ArrowRight } from "lucide-react";
 
 interface FlightRoutePathProps {
   stops: FlightRouteStop[];
@@ -72,8 +23,8 @@ export function FlightRoutePath({ stops, className }: FlightRoutePathProps) {
       )}
     >
       {stops.map((stop, index) => {
-        const { icon: Icon, label, className: iconClass } = stopIcon(
-          stop,
+        const { icon: Icon, label, iconClassName } = getStopDisplay(
+          stop.stop_type,
           index,
           stops.length
         );
@@ -84,7 +35,7 @@ export function FlightRoutePath({ stops, className }: FlightRoutePathProps) {
               <span
                 className={cn(
                   "flex h-7 w-7 shrink-0 items-center justify-center rounded-full",
-                  iconClass
+                  iconClassName
                 )}
                 title={label}
               >

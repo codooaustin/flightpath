@@ -15,7 +15,7 @@ import {
 } from "@/components/certification/faa-help-tip";
 import type { FaaResource } from "@/lib/data/faa-resources";
 import { cn } from "@/lib/utils";
-import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight } from "lucide-react";
 
 const STORAGE_KEY = "flightpath-dashboard-faa-sidebar";
 
@@ -103,15 +103,24 @@ export function DashboardFaaSidebar({
       <Button
         type="button"
         variant="outline"
-        size="icon-sm"
+        size={open ? "icon-sm" : "sm"}
         onClick={toggle}
-        className="sticky top-6"
-        aria-label={open ? "Collapse FAA resources" : "Expand FAA resources"}
+        className={cn(
+          "sticky top-6",
+          !open && "h-auto flex-col gap-1 px-2 py-2"
+        )}
+        aria-label={open ? "Hide FAA resources" : "Show FAA resources"}
+        title={open ? "Hide FAA resources" : "FAA resources"}
       >
         {open ? (
           <ChevronRight className="h-4 w-4" />
         ) : (
-          <ChevronLeft className="h-4 w-4" />
+          <>
+            <BookOpen className="h-4 w-4 text-sky-600" />
+            <span className="text-[10px] font-semibold leading-none tracking-wide">
+              FAA
+            </span>
+          </>
         )}
       </Button>
       <aside
