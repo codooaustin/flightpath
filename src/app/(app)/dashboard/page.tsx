@@ -1,4 +1,5 @@
 import { getDashboardData } from "@/lib/data";
+import { buildFlightMapEntries } from "@/lib/flights/map-data";
 import { DashboardContent } from "@/components/dashboard/dashboard-content";
 
 export default async function DashboardPage({
@@ -8,6 +9,7 @@ export default async function DashboardPage({
 }) {
   const params = await searchParams;
   const data = await getDashboardData(params);
+  const flightMapEntries = await buildFlightMapEntries(data.flights, 5);
 
   return (
     <DashboardContent
@@ -19,6 +21,7 @@ export default async function DashboardPage({
       journal={data.journal}
       flights={data.flights}
       studentProfile={data.studentProfile}
+      flightMapEntries={flightMapEntries}
     />
   );
 }

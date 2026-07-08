@@ -112,7 +112,19 @@ export interface Flight {
   instrument_time: number | null;
   landings: number | null;
   notes: string | null;
+  route: FlightRouteStop[] | null;
   created_at: string;
+}
+
+export type FlightStopType =
+  | "departure"
+  | "touch_and_go"
+  | "full_stop"
+  | "landing";
+
+export interface FlightRouteStop {
+  airport: string;
+  stop_type: FlightStopType;
 }
 
 export interface JournalEntry {

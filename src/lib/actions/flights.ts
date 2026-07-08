@@ -2,6 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getActiveStudentId } from "@/lib/auth";
+import {
+  deriveEndpoints,
+  parseRouteJson,
+} from "@/lib/flights/route";
+import type { Json } from "@/types/database";
 import { revalidatePath } from "next/cache";
 
 function parseOptionalNumber(value: FormDataEntryValue | null): number | null {
@@ -22,13 +27,26 @@ function flightFromFormData(formData: FormData) {
     return { error: "Flight time is required" as const };
   }
 
+  const route = parseRouteJson(formData.get("route") as string);
+  const endpoints = route ? deriveEndpoints(route) : {
+    departure_airport: (formData.get("departure_airport") as string) || null,
+    arrival_airport: (formData.get("arrival_airport") as string) || null,
+  };
+
+  if (route) {
+    const invalidStop = route.find((stop) => !stop.airport.trim());
+    if (invalidStop) {
+      return { error: "Each route stop needs an airport code" as const };
+    }
+  }
+
   return {
     data: {
       date: formData.get("date") as string,
       aircraft: (formData.get("aircraft") as string) || null,
       tail_number: (formData.get("tail_number") as string) || null,
-      departure_airport: (formData.get("departure_airport") as string) || null,
-      arrival_airport: (formData.get("arrival_airport") as string) || null,
+      departure_airport: endpoints.departure_airport,
+      arrival_airport: endpoints.arrival_airport,
       instructor: (formData.get("instructor") as string) || null,
       flight_time: flightTime,
       pic_time: parseOptionalNumber(formData.get("pic_time")),
@@ -38,6 +56,7 @@ function flightFromFormData(formData: FormData) {
       instrument_time: parseOptionalNumber(formData.get("instrument_time")),
       landings: parseOptionalInt(formData.get("landings")),
       notes: (formData.get("notes") as string) || null,
+      route: route ?? null,
     },
   };
 }
@@ -52,6 +71,7 @@ export async function createFlight(formData: FormData) {
   const { error } = await supabase.from("flights").insert({
     user_id: studentId,
     ...parsed.data,
+    route: parsed.data.route as Json,
   });
 
   if (error) return { error: error.message };
@@ -70,7 +90,10 @@ export async function updateFlight(id: string, formData: FormData) {
 
   const { error } = await supabase
     .from("flights")
-    .update(parsed.data)
+    .update({
+      ...parsed.data,
+      route: parsed.data.route as Json,
+    })
     .eq("id", id)
     .eq("user_id", studentId);
 

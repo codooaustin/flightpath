@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getActiveStudentId } from "@/lib/auth";
+import { parseFlights } from "@/lib/flights/parse";
 import type { Mission, Profile, UserMission } from "@/types/models";
 
 function mergeUserMissions(
@@ -61,7 +62,7 @@ export async function getDashboardData(searchParams?: { student?: string }) {
     events: events ?? [],
     expenses: expenses ?? [],
     journal: journal ?? [],
-    flights: flights ?? [],
+    flights: parseFlights(flights ?? []),
     studentProfile: (studentProfile as Profile | null) ?? null,
     studentId,
   };
@@ -71,14 +72,22 @@ export async function getLogbookData(searchParams?: { student?: string }) {
   const supabase = await createClient();
   const studentId = await getActiveStudentId(searchParams);
 
-  const { data: flights } = await supabase
-    .from("flights")
-    .select("*")
-    .eq("user_id", studentId)
-    .order("date", { ascending: false });
+  const [{ data: flights }, { data: profile }] = await Promise.all([
+    supabase
+      .from("flights")
+      .select("*")
+      .eq("user_id", studentId)
+      .order("date", { ascending: false }),
+    supabase
+      .from("profiles")
+      .select("home_airport")
+      .eq("id", studentId)
+      .single(),
+  ]);
 
   return {
-    flights: flights ?? [],
+    flights: parseFlights(flights ?? []),
+    homeAirport: profile?.home_airport ?? null,
     studentId,
   };
 }

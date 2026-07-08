@@ -189,6 +189,7 @@ export interface Database {
           instrument_time: number | null;
           landings: number | null;
           notes: string | null;
+          route: Json | null;
           created_at: string;
         };
         Insert: {
@@ -208,6 +209,7 @@ export interface Database {
           instrument_time?: number | null;
           landings?: number | null;
           notes?: string | null;
+          route?: Json | null;
           created_at?: string;
         };
         Update: {
@@ -227,6 +229,7 @@ export interface Database {
           instrument_time?: number | null;
           landings?: number | null;
           notes?: string | null;
+          route?: Json | null;
           created_at?: string;
         };
         Relationships: [];

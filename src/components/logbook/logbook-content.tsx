@@ -37,6 +37,8 @@ import {
   FaaHelpTip,
   FieldHelpTip,
 } from "@/components/certification/faa-help-tip";
+import { RouteBuilder } from "@/components/flights/route-builder";
+import { formatFlightRoute } from "@/lib/flights/route";
 import type { Flight } from "@/types/models";
 import { format } from "date-fns";
 import { Pencil, Plane, Plus, Trash2 } from "lucide-react";
@@ -45,6 +47,7 @@ import { toast } from "sonner";
 interface LogbookContentProps {
   flights: Flight[];
   isStudent: boolean;
+  homeAirport?: string | null;
 }
 
 function LabelWithHelp({
@@ -67,11 +70,13 @@ function LabelWithHelp({
 
 function FlightForm({
   flight,
+  homeAirport,
   onSuccess,
   loading,
   setLoading,
 }: {
   flight?: Flight;
+  homeAirport?: string | null;
   onSuccess: () => void;
   loading: boolean;
   setLoading: (v: boolean) => void;
@@ -136,24 +141,6 @@ function FlightForm({
             defaultValue={flight?.tail_number ?? ""}
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="departure_airport">Departure</Label>
-          <Input
-            id="departure_airport"
-            name="departure_airport"
-            placeholder="KORD"
-            defaultValue={flight?.departure_airport ?? ""}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="arrival_airport">Arrival</Label>
-          <Input
-            id="arrival_airport"
-            name="arrival_airport"
-            placeholder="KMDW"
-            defaultValue={flight?.arrival_airport ?? ""}
-          />
-        </div>
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="instructor">Instructor</Label>
           <Input
@@ -163,6 +150,8 @@ function FlightForm({
           />
         </div>
       </div>
+
+      <RouteBuilder flight={flight} homeAirport={homeAirport} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">
@@ -255,7 +244,7 @@ function FlightForm({
   );
 }
 
-export function LogbookContent({ flights, isStudent }: LogbookContentProps) {
+export function LogbookContent({ flights, isStudent, homeAirport }: LogbookContentProps) {
   const [open, setOpen] = useState(false);
   const [editingFlight, setEditingFlight] = useState<Flight | null>(null);
   const [loading, setLoading] = useState(false);
@@ -279,10 +268,11 @@ export function LogbookContent({ flights, isStudent }: LogbookContentProps) {
   }
 
   function formatRoute(flight: Flight) {
-    if (flight.departure_airport && flight.arrival_airport) {
-      return `${flight.departure_airport} → ${flight.arrival_airport}`;
-    }
-    return flight.departure_airport ?? flight.arrival_airport ?? "—";
+    return formatFlightRoute(
+      flight.route,
+      flight.departure_airport,
+      flight.arrival_airport
+    );
   }
 
   return (
@@ -326,6 +316,7 @@ export function LogbookContent({ flights, isStudent }: LogbookContentProps) {
               <FlightForm
                 key={editingFlight?.id ?? "new"}
                 flight={editingFlight ?? undefined}
+                homeAirport={homeAirport}
                 onSuccess={closeDialog}
                 loading={loading}
                 setLoading={setLoading}

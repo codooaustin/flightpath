@@ -15,6 +15,7 @@ export default async function LogbookPage({
     <LogbookContent
       flights={data.flights}
       isStudent={profile?.role === "student"}
+      homeAirport={data.homeAirport}
     />
   );
 }
