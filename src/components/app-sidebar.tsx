@@ -30,6 +30,7 @@ import {
   Plane,
 } from "lucide-react";
 import { signOut } from "@/lib/actions/auth";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type { Profile } from "@/types/models";
 import type { LucideIcon } from "lucide-react";
 
@@ -86,7 +87,8 @@ export function AppSidebar({ profile, logo }: AppSidebarProps) {
         <div className="flex-1 overflow-hidden p-4">
           <NavLinks pathname={pathname} />
         </div>
-        <div className="shrink-0 border-t p-4">
+        <div className="shrink-0 space-y-3 border-t p-4">
+          <ThemeToggle showLabel className="justify-between px-1" />
           <DropdownMenu>
             <DropdownMenuTrigger
               className="w-full"
@@ -131,8 +133,11 @@ export function AppSidebar({ profile, logo }: AppSidebarProps) {
         />
         <SheetContent side="left" className="w-64 p-0">
           <div className="flex h-14 items-center border-b px-4">{logo}</div>
-          <div className="p-4">
+          <div className="flex flex-1 flex-col p-4">
             <NavLinks pathname={pathname} />
+            <div className="mt-auto border-t pt-4">
+              <ThemeToggle showLabel className="justify-between px-1" />
+            </div>
           </div>
         </SheetContent>
       </Sheet>
