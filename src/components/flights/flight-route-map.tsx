@@ -64,6 +64,29 @@ function FocusAirport({ point }: { point: FlightMapPoint | null }) {
   return null;
 }
 
+function ScrollWheelZoomOnHover() {
+  const map = useMap();
+
+  useEffect(() => {
+    map.scrollWheelZoom.disable();
+
+    const container = map.getContainer();
+    const enableZoom = () => map.scrollWheelZoom.enable();
+    const disableZoom = () => map.scrollWheelZoom.disable();
+
+    container.addEventListener("mouseenter", enableZoom);
+    container.addEventListener("mouseleave", disableZoom);
+
+    return () => {
+      container.removeEventListener("mouseenter", enableZoom);
+      container.removeEventListener("mouseleave", disableZoom);
+      map.scrollWheelZoom.disable();
+    };
+  }, [map]);
+
+  return null;
+}
+
 function AirportMarker({
   point,
   index,
@@ -148,7 +171,7 @@ export function FlightRouteMap({
 
   return (
     <div
-      className={`relative isolate z-0 overflow-hidden rounded-lg border ${className ?? ""}`}
+      className={`flight-route-map relative isolate z-0 overflow-hidden rounded-lg border ${className ?? ""}`}
     >
       <MapContainer
         center={[center.lat, center.lng]}
@@ -157,6 +180,7 @@ export function FlightRouteMap({
         scrollWheelZoom={false}
         attributionControl={false}
       >
+        <ScrollWheelZoomOnHover />
         <TileLayer key={tileUrl} url={tileUrl} />
         <FitBounds points={entry.points} enabled={!focusedPoint} />
         <FocusAirport point={focusedPoint} />
