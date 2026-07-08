@@ -33,3 +33,24 @@ export function formatCurrency(amount: number) {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+export function calculateCostPerHour(
+  totalSpent: number,
+  totalHours: number
+): number | null {
+  if (totalHours <= 0) return null;
+  return totalSpent / totalHours;
+}
+
+export function calculateCategoryPercentages(
+  byCategory: Record<string, number>,
+  totalSpent: number
+): Record<string, number> {
+  if (totalSpent <= 0) return {};
+  return Object.fromEntries(
+    Object.entries(byCategory).map(([category, amount]) => [
+      category,
+      Math.round((amount / totalSpent) * 100),
+    ])
+  );
+}

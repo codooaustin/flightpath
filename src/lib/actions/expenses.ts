@@ -2,8 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getActiveStudentId } from "@/lib/auth";
+import { resolveStoragePath } from "@/lib/supabase/storage";
 import { revalidatePath } from "next/cache";
 import type { ExpenseCategory } from "@/types/models";
+
+const RECEIPTS_BUCKET = "receipts";
 
 export async function createExpense(formData: FormData) {
   const supabase = await createClient();
@@ -15,13 +18,12 @@ export async function createExpense(formData: FormData) {
   if (receipt && receipt.size > 0) {
     const path = `${studentId}/receipts/${Date.now()}-${receipt.name}`;
     const { error: uploadError } = await supabase.storage
-      .from("receipts")
+      .from(RECEIPTS_BUCKET)
       .upload(path, receipt);
 
     if (uploadError) return { error: uploadError.message };
 
-    const { data } = supabase.storage.from("receipts").getPublicUrl(path);
-    receiptUrl = data.publicUrl;
+    receiptUrl = path;
   }
 
   const { error } = await supabase.from("expenses").insert({
@@ -43,6 +45,20 @@ export async function createExpense(formData: FormData) {
 export async function deleteExpense(id: string) {
   const supabase = await createClient();
   const studentId = await getActiveStudentId();
+
+  const { data: expense } = await supabase
+    .from("expenses")
+    .select("receipt_url")
+    .eq("id", id)
+    .eq("user_id", studentId)
+    .single();
+
+  if (expense?.receipt_url) {
+    const storagePath = resolveStoragePath(expense.receipt_url, RECEIPTS_BUCKET);
+    if (storagePath) {
+      await supabase.storage.from(RECEIPTS_BUCKET).remove([storagePath]);
+    }
+  }
 
   const { error } = await supabase
     .from("expenses")
@@ -78,13 +94,12 @@ export async function updateExpense(id: string, formData: FormData) {
   if (receipt && receipt.size > 0) {
     const path = `${studentId}/receipts/${Date.now()}-${receipt.name}`;
     const { error: uploadError } = await supabase.storage
-      .from("receipts")
+      .from(RECEIPTS_BUCKET)
       .upload(path, receipt);
 
     if (uploadError) return { error: uploadError.message };
 
-    const { data } = supabase.storage.from("receipts").getPublicUrl(path);
-    update.receipt_url = data.publicUrl;
+    update.receipt_url = path;
   }
 
   const { error } = await supabase

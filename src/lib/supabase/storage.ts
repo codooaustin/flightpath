@@ -54,3 +54,20 @@ export async function withSignedFileUrls<T extends { file_url: string; bucket: s
     })
   );
 }
+
+export async function withSignedReceiptUrls<T extends { receipt_url: string | null }>(
+  supabase: AppSupabaseClient,
+  expenses: T[]
+): Promise<T[]> {
+  return Promise.all(
+    expenses.map(async (expense) => {
+      if (!expense.receipt_url) return expense;
+      const signedUrl = await createSignedStorageUrl(
+        supabase,
+        "receipts",
+        expense.receipt_url
+      );
+      return signedUrl ? { ...expense, receipt_url: signedUrl } : expense;
+    })
+  );
+}

@@ -1,24 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { format, isSameMonth, startOfMonth } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Table,
@@ -29,322 +22,525 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  createExpense,
-  deleteExpense,
-  updateExpense,
-} from "@/lib/actions/expenses";
+  DashboardFaaMobileButton,
+  DashboardFaaSidebar,
+} from "@/components/dashboard/dashboard-faa-sidebar";
+import { CostsEmptyState } from "@/components/costs/costs-empty-state";
+import { CostsHero } from "@/components/costs/costs-hero";
+import { ExpenseDetailDialog } from "@/components/costs/expense-detail-dialog";
+import { ExpenseForm } from "@/components/costs/expense-form";
+import { deleteExpense } from "@/lib/actions/expenses";
 import {
+  calculateCategoryPercentages,
+  calculateEstimatedRemaining,
   calculateExpensesByCategory,
   calculateTotalSpent,
   formatCurrency,
 } from "@/lib/calculations/costs";
-import { formatDateOnly, toDateInputValue } from "@/lib/dates";
-import { EXPENSE_CATEGORY_LABELS } from "@/types/models";
-import type { Expense, ExpenseCategory } from "@/types/models";
-import { Pencil, Plus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { sumFlightHours } from "@/lib/calculations/flight-hours";
+import { getCurrentStage } from "@/lib/calculations/progress";
+import { getCostsGuidanceResources } from "@/lib/data/costs-guidance";
+import { getStageResources } from "@/lib/data/stage-guidance";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+  EXPENSE_CATEGORY_BAR_CLASS,
+  expenseCategoryBadgeClass,
+} from "@/lib/costs/expense-styles";
+import type { ExpenseTemplate } from "@/lib/costs/expense-templates";
+import { formatDateOnly } from "@/lib/dates";
+import { EXPENSE_CATEGORY_LABELS } from "@/types/models";
+import type {
+  Expense,
+  ExpenseCategory,
+  Flight,
+  Mission,
+  Stage,
+  UserMission,
+} from "@/types/models";
+import { cn } from "@/lib/utils";
+import { Plus, Search } from "lucide-react";
+import { toast } from "sonner";
+
+type TimeFilter = "all" | "this_month";
+type CategoryFilter = "all" | ExpenseCategory;
+
+const TIME_FILTERS: { value: TimeFilter; label: string }[] = [
+  { value: "all", label: "All time" },
+  { value: "this_month", label: "This month" },
+];
 
 interface CostsContentProps {
   expenses: Expense[];
+  flights: Flight[];
+  missions: Mission[];
+  userMissions: (UserMission & { mission?: Mission })[];
+  stages: Stage[];
   isStudent: boolean;
+  initialOpenExpenseId?: string | null;
+  initialOpenNew?: boolean;
 }
 
-function ExpenseForm({
+function ExpenseListItem({
   expense,
-  category,
-  setCategory,
-  loading,
-  setLoading,
-  onSuccess,
+  onSelect,
 }: {
-  expense?: Expense;
-  category: ExpenseCategory;
-  setCategory: (category: ExpenseCategory) => void;
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
-  onSuccess: () => void;
+  expense: Expense;
+  onSelect: (expense: Expense) => void;
 }) {
-  async function handleSubmit(formData: FormData) {
-    const receipt = formData.get("receipt") as File | null;
-    const maxBytes = 9 * 1024 * 1024;
-
-    if (receipt && receipt.size > maxBytes) {
-      toast.error("Receipt must be 9 MB or smaller");
-      return;
-    }
-
-    setLoading(true);
-    formData.set("category", category);
-
-    try {
-      const result = expense
-        ? await updateExpense(expense.id, formData)
-        : await createExpense(formData);
-
-      if (result?.error) toast.error(result.error);
-      else {
-        toast.success(expense ? "Expense updated" : "Expense added");
-        onSuccess();
-      }
-    } catch {
-      toast.error("Failed to save expense. Try a smaller receipt or try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
-    <form action={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label>Category</Label>
-        <Select
-          value={category}
-          onValueChange={(value) => setCategory(value as ExpenseCategory)}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(EXPENSE_CATEGORY_LABELS).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="amount">Amount ($)</Label>
-        <Input
-          id="amount"
-          name="amount"
-          type="number"
-          step="0.01"
-          min="0"
-          defaultValue={expense?.amount ?? ""}
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="date">Date</Label>
-        <Input
-          id="date"
-          name="date"
-          type="date"
-          defaultValue={
-            expense?.date
-              ? toDateInputValue(expense.date)
-              : new Date().toISOString().split("T")[0]
-          }
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          name="description"
-          defaultValue={expense?.description ?? ""}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="receipt">Receipt (optional)</Label>
-        <Input id="receipt" name="receipt" type="file" />
-        {expense?.receipt_url && (
-          <p className="text-xs text-muted-foreground">
-            Current receipt on file. Upload a new file to replace it.
+    <button
+      type="button"
+      onClick={() => onSelect(expense)}
+      className="flex w-full flex-col gap-2 rounded-lg border p-4 text-left transition-colors hover:bg-muted/40"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="font-medium">
+            {expense.description ?? EXPENSE_CATEGORY_LABELS[expense.category]}
           </p>
-        )}
+          <Badge
+            variant="outline"
+            className={expenseCategoryBadgeClass(expense.category)}
+          >
+            {EXPENSE_CATEGORY_LABELS[expense.category]}
+          </Badge>
+        </div>
+        <p className="shrink-0 font-semibold">
+          {formatCurrency(Number(expense.amount))}
+        </p>
       </div>
-      <Button type="submit" disabled={loading}>
-        {expense ? "Save Changes" : "Add Expense"}
-      </Button>
-    </form>
+      <p className="text-xs text-muted-foreground">
+        {formatDateOnly(expense.date)}
+        {expense.receipt_url ? " · Receipt attached" : ""}
+      </p>
+    </button>
   );
 }
 
-export function CostsContent({ expenses, isStudent }: CostsContentProps) {
-  const [open, setOpen] = useState(false);
-  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-  const [category, setCategory] = useState<ExpenseCategory>("flight_training");
-  const [loading, setLoading] = useState(false);
-
+function CategoryBreakdown({
+  expenses,
+}: {
+  expenses: Expense[];
+}) {
   const totalSpent = calculateTotalSpent(expenses);
   const byCategory = calculateExpensesByCategory(expenses);
-  const chartData = Object.entries(byCategory).map(([cat, amount]) => ({
-    name: EXPENSE_CATEGORY_LABELS[cat as ExpenseCategory] ?? cat,
-    amount,
-  }));
+  const percentages = calculateCategoryPercentages(byCategory, totalSpent);
+  const rows = Object.entries(byCategory).sort(([, a], [, b]) => b - a);
 
-  function handleDialogChange(nextOpen: boolean) {
-    setOpen(nextOpen);
+  if (rows.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium">By category</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {rows.map(([category, amount]) => {
+          const cat = category as ExpenseCategory;
+          const percent = percentages[category] ?? 0;
+          return (
+            <div key={category} className="space-y-1.5">
+              <div className="flex items-center justify-between gap-2 text-sm">
+                <span className="text-muted-foreground">
+                  {EXPENSE_CATEGORY_LABELS[cat]}
+                </span>
+                <span className="font-medium">
+                  {formatCurrency(amount)}
+                  <span className="ml-1 text-xs font-normal text-muted-foreground">
+                    ({percent}%)
+                  </span>
+                </span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-muted">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all",
+                    EXPENSE_CATEGORY_BAR_CLASS[cat]
+                  )}
+                  style={{ width: `${percent}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function CostsContent({
+  expenses,
+  flights,
+  missions,
+  userMissions,
+  stages,
+  isStudent,
+  initialOpenExpenseId,
+  initialOpenNew = false,
+}: CostsContentProps) {
+  const searchParams = useSearchParams();
+  const currentStage = getCurrentStage(stages, missions, userMissions);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+
+  const [formOpen, setFormOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [category, setCategory] = useState<ExpenseCategory>("flight_training");
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [formDefaults, setFormDefaults] = useState<{
+    amount?: number;
+    description?: string;
+  }>({});
+
+  const totalSpent = calculateTotalSpent(expenses);
+  const estimatedRemaining = calculateEstimatedRemaining(missions, userMissions);
+  const totalHours = sumFlightHours(flights).total;
+
+  const costsResources = getCostsGuidanceResources();
+  const stageResources = currentStage
+    ? getStageResources(currentStage.name)
+    : [];
+  const supplementalFaaResources = costsResources.filter(
+    (resource) =>
+      !stageResources.some(
+        (existing) => existing.milestoneId === resource.milestoneId
+      )
+  );
+
+  const usedCategories = useMemo(() => {
+    const cats = new Set(expenses.map((e) => e.category));
+    return (Object.keys(EXPENSE_CATEGORY_LABELS) as ExpenseCategory[]).filter(
+      (cat) => cats.has(cat)
+    );
+  }, [expenses]);
+
+  const filteredExpenses = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    const monthStart = startOfMonth(new Date());
+
+    return expenses.filter((expense) => {
+      if (timeFilter === "this_month") {
+        if (!isSameMonth(new Date(expense.date), monthStart)) return false;
+      }
+      if (categoryFilter !== "all" && expense.category !== categoryFilter) {
+        return false;
+      }
+      if (!query) return true;
+      const label = EXPENSE_CATEGORY_LABELS[expense.category].toLowerCase();
+      return (
+        label.includes(query) ||
+        (expense.description?.toLowerCase().includes(query) ?? false)
+      );
+    });
+  }, [expenses, searchQuery, timeFilter, categoryFilter]);
+
+  const groupedExpenses = useMemo(() => {
+    const groups = new Map<string, Expense[]>();
+    for (const expense of filteredExpenses) {
+      const key = format(new Date(expense.date), "yyyy-MM");
+      const list = groups.get(key) ?? [];
+      list.push(expense);
+      groups.set(key, list);
+    }
+    return [...groups.entries()].sort(([left], [right]) =>
+      right.localeCompare(left)
+    );
+  }, [filteredExpenses]);
+
+  useEffect(() => {
+    if (initialOpenNew && isStudent) {
+      setEditingExpense(null);
+      setFormDefaults({});
+      setFormOpen(true);
+    }
+  }, [initialOpenNew, isStudent]);
+
+  useEffect(() => {
+    const openId = initialOpenExpenseId ?? searchParams.get("open");
+    if (!openId) return;
+    const expense = expenses.find((item) => item.id === openId);
+    if (expense) setSelectedExpense(expense);
+  }, [initialOpenExpenseId, searchParams, expenses]);
+
+  function handleFormDialogChange(nextOpen: boolean) {
+    setFormOpen(nextOpen);
     if (!nextOpen) {
       setEditingExpense(null);
+      setFormDefaults({});
       setCategory("flight_training");
     }
   }
 
-  function openCreate() {
+  function openCreate(options?: {
+    category?: ExpenseCategory;
+    amount?: number;
+    description?: string;
+  }) {
     setEditingExpense(null);
-    setCategory("flight_training");
-    setOpen(true);
+    setCategory(options?.category ?? "flight_training");
+    setFormDefaults({
+      amount: options?.amount,
+      description: options?.description,
+    });
+    setFormOpen(true);
   }
 
   function openEdit(expense: Expense) {
+    setSelectedExpense(null);
     setEditingExpense(expense);
     setCategory(expense.category);
-    setOpen(true);
+    setFormDefaults({});
+    setFormOpen(true);
   }
 
-  async function handleDelete(id: string) {
-    const result = await deleteExpense(id);
-    if (result?.error) toast.error(result.error);
-    else toast.success("Expense deleted");
+  function openTemplate(template: ExpenseTemplate) {
+    openCreate({
+      category: template.category,
+      amount: template.amount,
+      description: template.description,
+    });
   }
+
+  async function handleDelete(expense: Expense) {
+    if (
+      !window.confirm(
+        `Delete this ${formatCurrency(Number(expense.amount))} expense? This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    setLoading(true);
+    const result = await deleteExpense(expense.id);
+    setLoading(false);
+    if (result?.error) toast.error(result.error);
+    else {
+      toast.success("Expense deleted");
+      setSelectedExpense(null);
+    }
+  }
+
+  const hasFilters =
+    searchQuery.trim().length > 0 ||
+    timeFilter !== "all" ||
+    categoryFilter !== "all";
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Costs</h1>
           <p className="text-muted-foreground">
             Track your aviation training investment
           </p>
         </div>
-        {isStudent && (
-          <Dialog open={open} onOpenChange={handleDialogChange}>
-            <DialogTrigger
-              render={
-                <Button onClick={openCreate}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Expense
-                </Button>
-              }
-            />
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {editingExpense ? "Edit Expense" : "New Expense"}
-                </DialogTitle>
-              </DialogHeader>
-              <ExpenseForm
-                key={editingExpense?.id ?? "new"}
-                expense={editingExpense ?? undefined}
-                category={category}
-                setCategory={setCategory}
-                loading={loading}
-                setLoading={setLoading}
-                onSuccess={() => handleDialogChange(false)}
-              />
-            </DialogContent>
-          </Dialog>
-        )}
+        <DashboardFaaMobileButton
+          resources={stageResources}
+          supplemental={supplementalFaaResources}
+        />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{formatCurrency(totalSpent)}</p>
-          </CardContent>
-        </Card>
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">By Category</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[200px]">
-            {chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" fontSize={12} />
-                  <YAxis fontSize={12} />
-                  <Tooltip formatter={(v) => formatCurrency(Number(v))} />
-                  <Bar dataKey="amount" fill="#0284c7" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No expenses recorded yet.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <div className="flex gap-6">
+        <div className="min-w-0 flex-1 space-y-6">
+          <CostsHero
+            totalSpent={totalSpent}
+            estimatedRemaining={estimatedRemaining}
+            totalHours={totalHours}
+            isStudent={isStudent}
+            onAddExpense={() => openCreate()}
+          />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Expense History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {expenses.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  {isStudent && <TableHead />}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {expenses.map((expense) => (
-                  <TableRow key={expense.id}>
-                    <TableCell>
-                      {formatDateOnly(expense.date)}
-                    </TableCell>
-                    <TableCell>
-                      {EXPENSE_CATEGORY_LABELS[expense.category]}
-                    </TableCell>
-                    <TableCell>{expense.description ?? "—"}</TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatCurrency(Number(expense.amount))}
-                    </TableCell>
-                    {isStudent && (
-                      <TableCell>
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openEdit(expense)}
-                            aria-label={`Edit expense from ${formatDateOnly(expense.date)}`}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(expense.id)}
-                            aria-label={`Delete expense from ${formatDateOnly(expense.date)}`}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    )}
-                  </TableRow>
+          {expenses.length > 0 && <CategoryBreakdown expenses={expenses} />}
+
+          {expenses.length > 0 && (
+            <div className="space-y-3">
+              <div className="relative">
+                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search expenses..."
+                  className="pl-9"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {TIME_FILTERS.map((filter) => (
+                  <Button
+                    key={filter.value}
+                    variant={
+                      timeFilter === filter.value ? "default" : "outline"
+                    }
+                    size="sm"
+                    onClick={() => setTimeFilter(filter.value)}
+                  >
+                    {filter.label}
+                  </Button>
                 ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No expenses yet. Add your first training cost.
-            </p>
+                {usedCategories.length > 0 && (
+                  <>
+                    <span className="mx-1 hidden h-6 w-px bg-border sm:inline" />
+                    <Button
+                      variant={
+                        categoryFilter === "all" ? "secondary" : "outline"
+                      }
+                      size="sm"
+                      onClick={() => setCategoryFilter("all")}
+                    >
+                      All categories
+                    </Button>
+                    {usedCategories.map((cat) => (
+                      <Button
+                        key={cat}
+                        variant={
+                          categoryFilter === cat ? "secondary" : "outline"
+                        }
+                        size="sm"
+                        onClick={() => setCategoryFilter(cat)}
+                      >
+                        {EXPENSE_CATEGORY_LABELS[cat]}
+                      </Button>
+                    ))}
+                  </>
+                )}
+              </div>
+            </div>
           )}
-        </CardContent>
-      </Card>
+
+          {expenses.length === 0 ? (
+            <CostsEmptyState
+              isStudent={isStudent}
+              onUseTemplate={openTemplate}
+              onAddExpense={() => openCreate()}
+            />
+          ) : filteredExpenses.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                No expenses match your {hasFilters ? "filters" : "search"}.
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <div className="space-y-6 md:hidden">
+                {groupedExpenses.map(([monthKey, monthExpenses]) => {
+                  const monthDate = new Date(`${monthKey}-01T12:00:00`);
+                  return (
+                    <section key={monthKey} className="space-y-3">
+                      <h2 className="text-sm font-medium text-muted-foreground">
+                        {format(monthDate, "MMMM yyyy")}
+                      </h2>
+                      <div className="space-y-3">
+                        {monthExpenses.map((expense) => (
+                          <ExpenseListItem
+                            key={expense.id}
+                            expense={expense}
+                            onSelect={setSelectedExpense}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  );
+                })}
+              </div>
+
+              <Card className="hidden md:block">
+                <CardHeader>
+                  <CardTitle>Expense history</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredExpenses.map((expense) => (
+                        <TableRow
+                          key={expense.id}
+                          className="cursor-pointer"
+                          onClick={() => setSelectedExpense(expense)}
+                        >
+                          <TableCell>
+                            {formatDateOnly(expense.date)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={expenseCategoryBadgeClass(
+                                expense.category
+                              )}
+                            >
+                              {EXPENSE_CATEGORY_LABELS[expense.category]}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {expense.description ?? "—"}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {formatCurrency(Number(expense.amount))}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
+
+        <DashboardFaaSidebar
+          resources={stageResources}
+          supplemental={supplementalFaaResources}
+          defaultOpen
+          storageKey="flightpath-costs-faa-sidebar"
+        />
+      </div>
+
+      {isStudent && (
+        <Button
+          className="fixed bottom-6 right-6 z-40 shadow-lg lg:hidden"
+          size="icon"
+          onClick={() => openCreate()}
+          aria-label="Add expense"
+        >
+          <Plus className="h-5 w-5" />
+        </Button>
+      )}
+
+      <Dialog open={formOpen} onOpenChange={handleFormDialogChange}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingExpense ? "Edit Expense" : "New Expense"}
+            </DialogTitle>
+          </DialogHeader>
+          <ExpenseForm
+            key={editingExpense?.id ?? `new-${formDefaults.description ?? ""}`}
+            expense={editingExpense ?? undefined}
+            category={category}
+            setCategory={setCategory}
+            defaultAmount={formDefaults.amount}
+            defaultDescription={formDefaults.description}
+            loading={loading}
+            setLoading={setLoading}
+            onSuccess={() => handleFormDialogChange(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <ExpenseDetailDialog
+        expense={selectedExpense}
+        isStudent={isStudent}
+        loading={loading}
+        onClose={() => setSelectedExpense(null)}
+        onEdit={openEdit}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveStudentId } from "@/lib/auth";
 import { parseFlights } from "@/lib/flights/parse";
 import { syncAgeGatedMissionAvailability } from "@/lib/missions/sync-missions";
+import { withSignedReceiptUrls } from "@/lib/supabase/storage";
 import type { Mission, Profile, UserMission } from "@/types/models";
 
 function mergeUserMissions(
@@ -220,6 +221,67 @@ export async function getJournalData(searchParams?: { student?: string }) {
 
   return {
     entries: entries ?? [],
+    stages: stages ?? [],
+    missions: missionList,
+    userMissions: mergeUserMissions(refreshedUserMissions ?? [], missionList),
+    studentProfile: studentProfile ?? null,
+    studentId,
+  };
+}
+
+export async function getCostsData(searchParams?: { student?: string }) {
+  const supabase = await createClient();
+  const studentId = await getActiveStudentId(searchParams);
+
+  const [
+    { data: expenses },
+    { data: flights },
+    { data: stages },
+    { data: missions },
+    { data: userMissions },
+    { data: studentProfile },
+  ] = await Promise.all([
+    supabase
+      .from("expenses")
+      .select("*")
+      .eq("user_id", studentId)
+      .order("date", { ascending: false }),
+    supabase
+      .from("flights")
+      .select("*")
+      .eq("user_id", studentId)
+      .order("date", { ascending: false }),
+    supabase.from("stages").select("*").order("order_number"),
+    supabase.from("missions").select("*").order("order_number"),
+    supabase.from("user_missions").select("*").eq("user_id", studentId),
+    supabase.from("profiles").select("birth_date").eq("id", studentId).single(),
+  ]);
+
+  const missionList = missions ?? [];
+  const mergedUserMissions = mergeUserMissions(userMissions ?? [], missionList);
+
+  await syncAgeGatedMissionAvailability(
+    studentId,
+    studentProfile?.birth_date ?? null,
+    missionList,
+    mergedUserMissions,
+    stages ?? []
+  );
+
+  const { data: refreshedUserMissions } = await supabase
+    .from("user_missions")
+    .select("*")
+    .eq("user_id", studentId);
+
+  const expenseList = expenses ?? [];
+  const expensesWithReceipts = await withSignedReceiptUrls(
+    supabase,
+    expenseList
+  );
+
+  return {
+    expenses: expensesWithReceipts,
+    flights: parseFlights(flights ?? []),
     stages: stages ?? [],
     missions: missionList,
     userMissions: mergeUserMissions(refreshedUserMissions ?? [], missionList),

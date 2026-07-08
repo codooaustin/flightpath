@@ -1,27 +1,28 @@
-import { createClient } from "@/lib/supabase/server";
-import { getActiveStudentId, getCurrentProfile } from "@/lib/auth";
+import { getCostsData } from "@/lib/data";
+import { getCurrentProfile } from "@/lib/auth";
 import { CostsContent } from "@/components/costs/costs-content";
 
 export default async function CostsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ student?: string }>;
+  searchParams: Promise<{ student?: string; open?: string; new?: string }>;
 }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const studentId = await getActiveStudentId(params);
-  const profile = await getCurrentProfile();
-
-  const { data: expenses } = await supabase
-    .from("expenses")
-    .select("*")
-    .eq("user_id", studentId)
-    .order("date", { ascending: false });
+  const [data, profile] = await Promise.all([
+    getCostsData(params),
+    getCurrentProfile(),
+  ]);
 
   return (
     <CostsContent
-      expenses={expenses ?? []}
+      expenses={data.expenses}
+      flights={data.flights}
+      missions={data.missions}
+      userMissions={data.userMissions}
+      stages={data.stages}
       isStudent={profile?.role === "student"}
+      initialOpenExpenseId={params.open ?? null}
+      initialOpenNew={params.new === "1"}
     />
   );
 }
