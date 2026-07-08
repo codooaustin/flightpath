@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "next-themes";
+import { ChevronDown, ChevronUp, Map } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   MapContainer,
   Marker,
@@ -159,6 +162,8 @@ interface FlightRouteMapProps {
   onFocusedAirportClear?: () => void;
   className?: string;
   mapHeightClassName?: string;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
 }
 
 export function FlightRouteMap({
@@ -167,9 +172,12 @@ export function FlightRouteMap({
   onFocusedAirportClear,
   className,
   mapHeightClassName = "h-48",
+  collapsible = false,
+  defaultCollapsed = false,
 }: FlightRouteMapProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
   useEffect(() => {
     setMounted(true);
@@ -203,10 +211,46 @@ export function FlightRouteMap({
       ? (entry.points.find((point) => point.code === focusedAirport) ?? null)
       : null;
 
+  if (collapsible && collapsed) {
+    return (
+      <button
+        type="button"
+        onClick={() => setCollapsed(false)}
+        className={cn(
+          "flex w-full items-center justify-between rounded-lg border bg-muted/30 px-3 py-2.5 text-sm transition-colors hover:bg-muted/50",
+          className
+        )}
+      >
+        <span className="flex items-center gap-2 text-muted-foreground">
+          <Map className="h-4 w-4 shrink-0" />
+          <span className="truncate font-medium text-foreground">
+            {entry.routeLabel}
+          </span>
+        </span>
+        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </button>
+    );
+  }
+
   return (
     <div
-      className={`flight-route-map relative isolate z-0 overflow-hidden rounded-lg border ${className ?? ""}`}
+      className={cn(
+        "flight-route-map relative isolate z-0 overflow-hidden rounded-lg border",
+        className
+      )}
     >
+      {collapsible && (
+        <Button
+          type="button"
+          variant="secondary"
+          size="icon-sm"
+          onClick={() => setCollapsed(true)}
+          aria-label="Collapse map"
+          className="absolute right-2 top-2 z-10 bg-background/90 shadow-md backdrop-blur-sm hover:bg-background"
+        >
+          <ChevronUp className="h-4 w-4" />
+        </Button>
+      )}
       <MapContainer
         center={[center.lat, center.lng]}
         zoom={9}

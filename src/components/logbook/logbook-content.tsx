@@ -371,6 +371,7 @@ export function LogbookContent({
               onSelect={setSelectedMapFlightId}
               mapHeightClassName="h-72"
               showFlightList={false}
+              collapsible
             />
           ) : (
             <p className="text-sm text-muted-foreground">

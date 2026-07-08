@@ -27,6 +27,8 @@ interface FlightLogMapPanelProps {
   onSelect: (id: string) => void;
   mapHeightClassName?: string;
   showFlightList?: boolean;
+  collapsible?: boolean;
+  defaultMapCollapsed?: boolean;
 }
 
 export function FlightLogMapPanel({
@@ -35,6 +37,8 @@ export function FlightLogMapPanel({
   onSelect,
   mapHeightClassName = "h-48",
   showFlightList = true,
+  collapsible = false,
+  defaultMapCollapsed = false,
 }: FlightLogMapPanelProps) {
   const selected =
     entries.find((entry) => entry.id === selectedId) ?? entries[0] ?? null;
@@ -44,6 +48,8 @@ export function FlightLogMapPanel({
       <FlightRouteMap
         entry={selected}
         mapHeightClassName={mapHeightClassName}
+        collapsible={collapsible}
+        defaultCollapsed={defaultMapCollapsed}
       />
       {selected && (
         <div className="flex flex-wrap items-center gap-2 text-sm">
