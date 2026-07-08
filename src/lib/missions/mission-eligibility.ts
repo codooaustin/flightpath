@@ -53,7 +53,8 @@ export function isMissionAgeGated(missionTitle: string): boolean {
 export function areStagePrerequisitesMet(
   mission: Mission,
   missions: Mission[],
-  userMissions: UserMission[]
+  userMissions: UserMission[],
+  birthDate?: string | null
 ): boolean {
   const stageMissions = missions
     .filter((entry) => entry.stage_id === mission.stage_id)
@@ -64,7 +65,17 @@ export function areStagePrerequisitesMet(
     const userMission = userMissions.find(
       (entry) => entry.mission_id === stageMission.id
     );
-    if (userMission?.status !== "completed") return false;
+    if (userMission?.status === "completed") continue;
+
+    // Waiting on FAA age alone should not block other prep work in the stage.
+    if (
+      isMissionAgeGated(stageMission.title) &&
+      !isMissionAgeEligible(birthDate, stageMission.title)
+    ) {
+      continue;
+    }
+
+    return false;
   }
 
   return true;
@@ -77,7 +88,9 @@ export function isMissionBlockedByAge(
   userMissions: UserMission[]
 ): boolean {
   if (!isMissionAgeGated(mission.title)) return false;
-  if (!areStagePrerequisitesMet(mission, missions, userMissions)) return false;
+  if (!areStagePrerequisitesMet(mission, missions, userMissions, birthDate)) {
+    return false;
+  }
   return !isMissionAgeEligible(birthDate, mission.title);
 }
 

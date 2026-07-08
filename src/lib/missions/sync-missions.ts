@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   areStagePrerequisitesMet,
   isMissionAgeEligible,
+  isMissionAgeGated,
 } from "@/lib/missions/mission-eligibility";
 import type { Mission, Stage, UserMission } from "@/types/models";
 
@@ -41,6 +42,21 @@ function isPreviousStageComplete(
     });
 }
 
+function isWaitingOnAge(
+  birthDate: string | null | undefined,
+  mission: Mission,
+  missions: Mission[],
+  userMissions: UserMission[]
+) {
+  if (!isMissionAgeGated(mission.title)) return false;
+  if (
+    !areStagePrerequisitesMet(mission, missions, userMissions, birthDate)
+  ) {
+    return false;
+  }
+  return !isMissionAgeEligible(birthDate, mission.title);
+}
+
 export async function syncAgeGatedMissionAvailability(
   studentId: string,
   birthDate: string | null | undefined,
@@ -61,7 +77,7 @@ export async function syncAgeGatedMissionAvailability(
       .filter((mission) => mission.stage_id === stage.id)
       .sort((left, right) => left.order_number - right.order_number);
 
-    let reachedIncompleteMission = false;
+    let reachedSequentialGate = false;
 
     for (const mission of stageMissions) {
       const userMission = userMissions.find(
@@ -73,7 +89,7 @@ export async function syncAgeGatedMissionAvailability(
         continue;
       }
 
-      if (reachedIncompleteMission) {
+      if (isWaitingOnAge(birthDate, mission, missions, userMissions)) {
         if (userMission.status !== "locked") {
           await setMissionStatus(studentId, userMission.id, "locked");
           userMission.status = "locked";
@@ -81,12 +97,19 @@ export async function syncAgeGatedMissionAvailability(
         continue;
       }
 
-      reachedIncompleteMission = true;
+      if (reachedSequentialGate) {
+        if (userMission.status !== "locked") {
+          await setMissionStatus(studentId, userMission.id, "locked");
+          userMission.status = "locked";
+        }
+        continue;
+      }
 
       const prerequisitesMet = areStagePrerequisitesMet(
         mission,
         missions,
-        userMissions
+        userMissions,
+        birthDate
       );
       const ageEligible = isMissionAgeEligible(birthDate, mission.title);
       const shouldBeAvailable = prerequisitesMet && ageEligible;
@@ -104,6 +127,8 @@ export async function syncAgeGatedMissionAvailability(
         await setMissionStatus(studentId, userMission.id, "locked");
         userMission.status = "locked";
       }
+
+      reachedSequentialGate = true;
     }
   }
 }
