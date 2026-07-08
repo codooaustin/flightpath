@@ -102,7 +102,7 @@ export async function getLogbookData(searchParams?: { student?: string }) {
       .order("date", { ascending: false }),
     supabase
       .from("profiles")
-      .select("home_airport")
+      .select("home_airport, birth_date")
       .eq("id", studentId)
       .single(),
     supabase.from("stages").select("*").order("order_number"),
@@ -115,6 +115,7 @@ export async function getLogbookData(searchParams?: { student?: string }) {
   return {
     flights: parseFlights(flights ?? []),
     homeAirport: profile?.home_airport ?? null,
+    studentProfile: profile,
     stages: stages ?? [],
     missions: missionList,
     userMissions: mergeUserMissions(userMissions ?? [], missionList),

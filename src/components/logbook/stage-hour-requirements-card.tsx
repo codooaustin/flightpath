@@ -3,26 +3,54 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { FlightProgress } from "@/components/dashboard/flight-progress";
 import { FaaHelpTip } from "@/components/certification/faa-help-tip";
-import { StageResourceLinks } from "@/components/missions/stage-resource-links";
+import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
 import type { FlightHourTotals } from "@/lib/calculations/flight-hours";
 import { formatHours } from "@/lib/calculations/flight-hours";
-import { getStageTrainingDisplay } from "@/lib/data/stage-guidance";
-import type { Stage } from "@/types/models";
+import {
+  getMissionAgeBlockMessage,
+  isMissionBlockedByAge,
+} from "@/lib/missions/mission-eligibility";
+import {
+  getStageCertificateMissionStatus,
+  getStageTrainingDisplay,
+} from "@/lib/data/stage-guidance";
+import type { Mission, Stage, UserMission } from "@/types/models";
 import { Award } from "lucide-react";
 
 interface StageHourRequirementsCardProps {
   currentStage: Stage | null;
   hourTotals: FlightHourTotals;
+  userMissions: (UserMission & { mission?: Mission })[];
+  missions: Mission[];
+  birthDate: string | null;
 }
 
 export function StageHourRequirementsCard({
   currentStage,
   hourTotals,
+  userMissions,
+  missions,
+  birthDate,
 }: StageHourRequirementsCardProps) {
   const display = currentStage
     ? getStageTrainingDisplay(currentStage.name, hourTotals)
     : null;
+  const certificateMission = currentStage
+    ? getStageCertificateMissionStatus(currentStage.name, userMissions)
+    : null;
+  const certificateMissionRecord = missions.find(
+    (mission) => mission.title === display?.certificate?.relatedMissionTitle
+  );
+  const certificateAgeBlocked =
+    certificateMissionRecord != null &&
+    isMissionBlockedByAge(
+      birthDate,
+      certificateMissionRecord,
+      missions,
+      userMissions
+    );
 
   return (
     <Card className="lg:sticky lg:top-6">
@@ -43,7 +71,7 @@ export function StageHourRequirementsCard({
         ) : (
           <>
             {display.certificate && (
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {display.certificate.sectionTitle}
                 </p>
@@ -56,6 +84,31 @@ export function StageHourRequirementsCard({
                 <p className="text-sm text-muted-foreground">
                   {display.certificate.description}
                 </p>
+                {certificateMission && (
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <MissionStatusBadge status={certificateMission.status} />
+                      {certificateMission.status !== "completed" &&
+                        !certificateAgeBlocked &&
+                        certificateMissionRecord && (
+                          <Link
+                            href={`/missions?open=${certificateMissionRecord.id}`}
+                            className="text-xs font-medium text-sky-600 hover:underline"
+                          >
+                            Complete mission →
+                          </Link>
+                        )}
+                    </div>
+                    {certificateAgeBlocked && certificateMissionRecord && (
+                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                        {getMissionAgeBlockMessage(
+                          birthDate,
+                          certificateMissionRecord.title
+                        )}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -69,17 +122,10 @@ export function StageHourRequirementsCard({
                   {display.hourAccrual.sectionTitle}
                 </p>
                 {!display.certificate && (
-                  <div className="flex items-center gap-1">
-                    <p className="font-medium">{display.milestone.name}</p>
-                  </div>
-                )}
-                {!display.certificate && display.hourAccrual.note && (
-                  <p className="text-xs text-muted-foreground">
-                    {display.hourAccrual.note}
-                  </p>
+                  <p className="font-medium">{display.milestone.name}</p>
                 )}
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">
                       {display.hourAccrual.primary.label}
@@ -89,11 +135,8 @@ export function StageHourRequirementsCard({
                       {formatHours(display.hourAccrual.primary.target)} hrs
                     </span>
                   </div>
-                  <Progress
-                    value={display.hourAccrual.primary.percent}
-                    className="h-1.5"
-                  />
-                  {display.certificate && display.hourAccrual.note && (
+                  <FlightProgress value={display.hourAccrual.primary.percent} />
+                  {display.hourAccrual.note && (
                     <p className="text-xs text-muted-foreground">
                       {display.hourAccrual.note}
                     </p>
@@ -116,8 +159,6 @@ export function StageHourRequirementsCard({
                 ))}
               </div>
             )}
-
-            <StageResourceLinks stageName={currentStage.name} />
 
             <Link
               href="/roadmap"

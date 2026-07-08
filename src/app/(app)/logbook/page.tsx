@@ -6,7 +6,7 @@ import { LogbookContent } from "@/components/logbook/logbook-content";
 export default async function LogbookPage({
   searchParams,
 }: {
-  searchParams: Promise<{ student?: string }>;
+  searchParams: Promise<{ student?: string; open?: string }>;
 }) {
   const params = await searchParams;
   const profile = await getCurrentProfile();
@@ -25,6 +25,8 @@ export default async function LogbookPage({
       userMissions={data.userMissions}
       isStudent={profile?.role === "student"}
       homeAirport={data.homeAirport}
+      birthDate={data.studentProfile?.birth_date ?? null}
+      initialOpenNew={params.open === "new"}
     />
   );
 }
