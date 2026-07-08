@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getActiveStudentId, getCurrentProfile } from "@/lib/auth";
+import { withSignedFileUrls } from "@/lib/supabase/storage";
 import { HangarContent } from "@/components/hangar/hangar-content";
 
 export default async function HangarPage({
@@ -18,9 +19,11 @@ export default async function HangarPage({
     .eq("user_id", studentId)
     .order("created_at", { ascending: false });
 
+  const filesWithUrls = await withSignedFileUrls(supabase, files ?? []);
+
   return (
     <HangarContent
-      files={files ?? []}
+      files={filesWithUrls}
       isStudent={profile?.role === "student"}
     />
   );

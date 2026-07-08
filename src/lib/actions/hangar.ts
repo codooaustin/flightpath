@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getActiveStudentId } from "@/lib/auth";
+import { resolveStoragePath } from "@/lib/supabase/storage";
 import { revalidatePath } from "next/cache";
 import type { FileCategory } from "@/types/models";
 
@@ -34,12 +35,10 @@ export async function uploadFile(formData: FormData) {
 
   if (uploadError) return { error: uploadError.message };
 
-  const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(path);
-
   const { error } = await supabase.from("files").insert({
     user_id: studentId,
     category,
-    file_url: urlData.publicUrl,
+    file_url: path,
     file_name: file.name,
     description,
     bucket,
@@ -55,8 +54,7 @@ export async function deleteFile(id: string, filePath: string, bucket: string) {
   const supabase = await createClient();
   const studentId = await getActiveStudentId();
 
-  const pathParts = new URL(filePath).pathname.split(`/${bucket}/`);
-  const storagePath = pathParts[1];
+  const storagePath = resolveStoragePath(filePath, bucket);
 
   if (storagePath) {
     await supabase.storage.from(bucket).remove([storagePath]);

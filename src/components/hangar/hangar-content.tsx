@@ -96,6 +96,7 @@ export function HangarContent({ files, isStudent }: HangarContentProps) {
                       src={file.file_url}
                       alt={file.file_name}
                       className="h-full w-full object-cover"
+                      loading="lazy"
                     />
                   </div>
                 ) : (
