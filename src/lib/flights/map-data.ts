@@ -22,6 +22,7 @@ export interface FlightMapEntry {
   flightTime: number;
   landings: number | null;
   aircraft: string | null;
+  stops: FlightRouteStop[];
   points: FlightMapPoint[];
   unresolvedCodes: string[];
 }
@@ -77,6 +78,7 @@ export async function buildFlightMapEntries(
       flightTime: Number(flight.flight_time),
       landings: flight.landings,
       aircraft: flight.aircraft,
+      stops,
       points,
       unresolvedCodes,
     };
