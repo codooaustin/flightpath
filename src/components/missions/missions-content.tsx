@@ -20,6 +20,7 @@ import { updateMissionStatus } from "@/lib/actions/missions";
 import { MISSION_STATUS_LABELS } from "@/types/models";
 import type { Mission, MissionStatus, Stage, UserMission } from "@/types/models";
 import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
+import { MissionResourceLinks } from "@/components/missions/mission-resource-links";
 import { formatCurrency } from "@/lib/calculations/costs";
 import { toast } from "sonner";
 
@@ -114,14 +115,21 @@ export function MissionsContent({
                 <MissionStatusBadge status={um.status} />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {um.mission?.description}
               </p>
-              {um.mission?.estimated_cost && (
-                <p className="mt-2 text-sm font-medium">
+              {um.mission?.estimated_cost != null && (
+                <p className="text-sm font-medium">
                   {formatCurrency(Number(um.mission.estimated_cost))}
                 </p>
+              )}
+              {um.mission && (
+                <MissionResourceLinks
+                  missionTitle={um.mission.title}
+                  compact
+                  onClick={(event) => event.stopPropagation()}
+                />
               )}
             </CardContent>
           </Card>
@@ -157,6 +165,9 @@ export function MissionsContent({
                   </ul>
                 </div>
               )}
+            {selected?.mission && (
+              <MissionResourceLinks missionTitle={selected.mission.title} />
+            )}
             {isStudent && selected && selected.status !== "completed" && (
               <div className="flex gap-2">
                 {selected.status === "available" && (

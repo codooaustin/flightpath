@@ -72,7 +72,13 @@ export async function getLogbookData(searchParams?: { student?: string }) {
   const supabase = await createClient();
   const studentId = await getActiveStudentId(searchParams);
 
-  const [{ data: flights }, { data: profile }] = await Promise.all([
+  const [
+    { data: flights },
+    { data: profile },
+    { data: stages },
+    { data: missions },
+    { data: userMissions },
+  ] = await Promise.all([
     supabase
       .from("flights")
       .select("*")
@@ -83,11 +89,19 @@ export async function getLogbookData(searchParams?: { student?: string }) {
       .select("home_airport")
       .eq("id", studentId)
       .single(),
+    supabase.from("stages").select("*").order("order_number"),
+    supabase.from("missions").select("*").order("order_number"),
+    supabase.from("user_missions").select("*").eq("user_id", studentId),
   ]);
+
+  const missionList = missions ?? [];
 
   return {
     flights: parseFlights(flights ?? []),
     homeAirport: profile?.home_airport ?? null,
+    stages: stages ?? [],
+    missions: missionList,
+    userMissions: mergeUserMissions(userMissions ?? [], missionList),
     studentId,
   };
 }

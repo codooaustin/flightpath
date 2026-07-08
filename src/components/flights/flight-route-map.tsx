@@ -37,9 +37,14 @@ function FitBounds({ points }: { points: FlightMapPoint[] }) {
 interface FlightRouteMapProps {
   entry: FlightMapEntry | null;
   className?: string;
+  mapHeightClassName?: string;
 }
 
-export function FlightRouteMap({ entry, className }: FlightRouteMapProps) {
+export function FlightRouteMap({
+  entry,
+  className,
+  mapHeightClassName = "h-48",
+}: FlightRouteMapProps) {
   if (!entry || entry.points.length === 0) {
     const message =
       entry && entry.unresolvedCodes.length > 0
@@ -48,7 +53,7 @@ export function FlightRouteMap({ entry, className }: FlightRouteMapProps) {
 
     return (
       <div
-        className={`flex h-48 items-center justify-center rounded-lg border bg-muted/30 px-4 text-center text-sm text-muted-foreground ${className ?? ""}`}
+        className={`flex items-center justify-center rounded-lg border bg-muted/30 px-4 text-center text-sm text-muted-foreground ${mapHeightClassName} ${className ?? ""}`}
       >
         {message}
       </div>
@@ -65,7 +70,7 @@ export function FlightRouteMap({ entry, className }: FlightRouteMapProps) {
       <MapContainer
         center={[center.lat, center.lng]}
         zoom={9}
-        className="h-48 w-full"
+        className={`${mapHeightClassName} w-full`}
         scrollWheelZoom={false}
         attributionControl={false}
       >

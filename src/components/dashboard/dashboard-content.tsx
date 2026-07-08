@@ -42,6 +42,7 @@ import { FlightLogCard } from "@/components/dashboard/flight-log-card";
 import type { FlightMapEntry } from "@/lib/flights/map-data";
 import { EVENT_TYPE_LABELS } from "@/types/models";
 import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
+import { MissionResourceLinks } from "@/components/missions/mission-resource-links";
 import type {
   CalendarEvent,
   Expense,
@@ -168,36 +169,44 @@ export function DashboardContent({
           </CardContent>
         </Card>
 
-        <Link href="/missions" className="group block">
-          <Card className="h-full cursor-pointer transition-shadow group-hover:shadow-md">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-sky-600" />
-                  Next Mission
-                </span>
-                <span className="text-sm font-normal text-sky-600 group-hover:underline">
-                  View missions →
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {nextMission?.mission ? (
-                <div className="space-y-2">
+        <Card className="h-full">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-sky-600" />
+                Next Mission
+              </span>
+              <Link
+                href="/missions"
+                className="text-sm font-normal text-sky-600 hover:underline"
+              >
+                View missions →
+              </Link>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {nextMission?.mission ? (
+              <div className="space-y-3">
+                <Link href="/missions" className="block space-y-2 hover:opacity-90">
                   <p className="font-medium">{nextMission.mission.title}</p>
                   <p className="text-sm text-muted-foreground line-clamp-2">
                     {nextMission.mission.description}
                   </p>
                   <MissionStatusBadge status={nextMission.status} />
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  All missions landed!
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </Link>
+                </Link>
+                <MissionResourceLinks
+                  missionTitle={nextMission.mission.title}
+                  compact
+                  title="Helpful resources"
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                All missions landed!
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

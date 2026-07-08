@@ -38,14 +38,22 @@ import {
   FieldHelpTip,
 } from "@/components/certification/faa-help-tip";
 import { RouteBuilder } from "@/components/flights/route-builder";
+import { StageHourRequirementsCard } from "@/components/logbook/stage-hour-requirements-card";
+import { FlightLogMapPanel } from "@/components/flights/flight-log-map-panel";
 import { formatFlightRoute } from "@/lib/flights/route";
-import type { Flight } from "@/types/models";
+import { getCurrentStage } from "@/lib/calculations/progress";
+import type { FlightMapEntry } from "@/lib/flights/map-data";
+import type { Flight, Mission, Stage, UserMission } from "@/types/models";
 import { format } from "date-fns";
-import { Pencil, Plane, Plus, Trash2 } from "lucide-react";
+import { MapPin, Pencil, Plane, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface LogbookContentProps {
   flights: Flight[];
+  flightMapEntries: FlightMapEntry[];
+  stages: Stage[];
+  missions: Mission[];
+  userMissions: (UserMission & { mission?: Mission })[];
   isStudent: boolean;
   homeAirport?: string | null;
 }
@@ -244,12 +252,24 @@ function FlightForm({
   );
 }
 
-export function LogbookContent({ flights, isStudent, homeAirport }: LogbookContentProps) {
+export function LogbookContent({
+  flights,
+  flightMapEntries,
+  stages,
+  missions,
+  userMissions,
+  isStudent,
+  homeAirport,
+}: LogbookContentProps) {
   const [open, setOpen] = useState(false);
   const [editingFlight, setEditingFlight] = useState<Flight | null>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedMapFlightId, setSelectedMapFlightId] = useState(
+    flightMapEntries[0]?.id ?? null
+  );
 
   const totals = sumFlightHours(flights);
+  const currentStage = getCurrentStage(stages, missions, userMissions);
 
   function closeDialog() {
     setOpen(false);
@@ -336,6 +356,32 @@ export function LogbookContent({ flights, isStudent, homeAirport }: LogbookConte
         )}
       </div>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-sky-600" />
+            Flight Routes
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {flightMapEntries.length > 0 ? (
+            <FlightLogMapPanel
+              entries={flightMapEntries}
+              selectedId={selectedMapFlightId}
+              onSelect={setSelectedMapFlightId}
+              mapHeightClassName="h-72"
+              showFlightList={false}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Add airport codes when logging a flight to see routes on the map.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
@@ -428,7 +474,15 @@ export function LogbookContent({ flights, isStudent, homeAirport }: LogbookConte
               </TableHeader>
               <TableBody>
                 {flights.map((flight) => (
-                  <TableRow key={flight.id}>
+                  <TableRow
+                    key={flight.id}
+                    className={
+                      selectedMapFlightId === flight.id
+                        ? "bg-sky-50/50"
+                        : "cursor-pointer"
+                    }
+                    onClick={() => setSelectedMapFlightId(flight.id)}
+                  >
                     <TableCell>
                       {format(new Date(flight.date), "MMM d, yyyy")}
                     </TableCell>
@@ -443,7 +497,10 @@ export function LogbookContent({ flights, isStudent, homeAirport }: LogbookConte
                     </TableCell>
                     {isStudent && (
                       <TableCell>
-                        <div className="flex justify-end gap-1">
+                        <div
+                          className="flex justify-end gap-1"
+                          onClick={(event) => event.stopPropagation()}
+                        >
                           <Button
                             variant="ghost"
                             size="icon"
@@ -479,6 +536,15 @@ export function LogbookContent({ flights, isStudent, homeAirport }: LogbookConte
           )}
         </CardContent>
       </Card>
+        </div>
+
+        <aside>
+          <StageHourRequirementsCard
+            currentStage={currentStage}
+            hourTotals={totals}
+          />
+        </aside>
+      </div>
     </div>
   );
 }

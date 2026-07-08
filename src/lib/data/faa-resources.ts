@@ -274,6 +274,45 @@ export function getSupplementalFaaResources(): FaaResource[] {
   ];
 }
 
+const MISSION_RESOURCE_IDS: Record<string, string[]> = {
+  "Take a Discovery Flight": ["become_pilot", "pilot_training"],
+  "Visit Local Flight Schools": ["pilot_training", "become_pilot"],
+  "Research Career Path": ["become_pilot", "pilot_training"],
+  "Obtain Student Pilot Certificate": ["student_pilot"],
+  "Pass FAA Medical Exam": ["medical_certificate", "medical_exam"],
+  "Begin Ground School": ["pilot_training", "become_pilot"],
+  "Complete Pre-Solo Requirements": [
+    "student_pilot",
+    "flight_logbook",
+    "pilot_training",
+  ],
+  "First Solo Flight": ["first_solo", "student_pilot", "flight_logbook"],
+  "Solo Cross-Country": ["student_pilot", "flight_logbook", "pilot_training"],
+  "Pass FAA Written Exam": ["private_pilot", "pilot_training", "become_pilot"],
+  "Complete Required Flight Hours": [
+    "private_pilot",
+    "flight_logbook",
+    "pilot_training",
+  ],
+  "Pass Private Pilot Checkride": ["private_pilot", "become_pilot"],
+};
+
+const DEFAULT_MISSION_RESOURCE_IDS = ["become_pilot", "pilot_training"];
+
+export function getMissionResources(missionTitle: string): FaaResource[] {
+  const ids =
+    MISSION_RESOURCE_IDS[missionTitle] ?? DEFAULT_MISSION_RESOURCE_IDS;
+  const seen = new Set<string>();
+
+  return ids
+    .map((id) => FAA_RESOURCES[id])
+    .filter((resource): resource is FaaResource => {
+      if (!resource || seen.has(resource.milestoneId)) return false;
+      seen.add(resource.milestoneId);
+      return true;
+    });
+}
+
 export const LOGBOOK_FIELD_HELP: Record<
   string,
   { label: string; tip: string }

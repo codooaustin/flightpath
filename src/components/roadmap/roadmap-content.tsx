@@ -6,6 +6,8 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Circle, Lock } from "lucide-react";
 import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
+import { MissionResourceLinks } from "@/components/missions/mission-resource-links";
+import { StageResourceLinks } from "@/components/missions/stage-resource-links";
 import {
   calculateStageProgress,
   getCurrentStage,
@@ -37,6 +39,20 @@ export function RoadmapContent({
           Your path from first flight to airline captain
         </p>
       </div>
+
+      {currentStage && (
+        <Card className="border-sky-200 bg-sky-50/30">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Current Stage: {currentStage.name}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {currentStage.description}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <StageResourceLinks stageName={currentStage.name} />
+          </CardContent>
+        </Card>
+      )}
 
       <div className="relative space-y-4">
         {stages.map((stage, index) => {
@@ -101,10 +117,15 @@ export function RoadmapContent({
                     {stage.description}
                   </p>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
                   <Progress value={stageProgress.percentage} className="h-1.5" />
+                  <StageResourceLinks
+                    stageName={stage.name}
+                    compact
+                    onClick={(event) => event.stopPropagation()}
+                  />
                   {isExpanded && (
-                    <ul className="mt-4 space-y-2">
+                    <ul className="space-y-2">
                       {stageMissions.map((mission) => {
                         const um = userMissions.find(
                           (u) => u.mission_id === mission.id
@@ -112,18 +133,24 @@ export function RoadmapContent({
                         return (
                           <li
                             key={mission.id}
-                            className="flex items-center justify-between rounded-lg border p-3"
+                            className="space-y-2 rounded-lg border p-3"
                           >
-                            <div>
-                              <p className="font-medium">{mission.title}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {mission.estimated_duration}
-                                {mission.estimated_cost
-                                  ? ` · ${formatCurrency(Number(mission.estimated_cost))}`
-                                  : ""}
-                              </p>
+                            <div className="flex items-center justify-between gap-2">
+                              <div>
+                                <p className="font-medium">{mission.title}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {mission.estimated_duration}
+                                  {mission.estimated_cost
+                                    ? ` · ${formatCurrency(Number(mission.estimated_cost))}`
+                                    : ""}
+                                </p>
+                              </div>
+                              <MissionStatusBadge status={um?.status ?? "locked"} />
                             </div>
-                            <MissionStatusBadge status={um?.status ?? "locked"} />
+                            <MissionResourceLinks
+                              missionTitle={mission.title}
+                              compact
+                            />
                           </li>
                         );
                       })}
