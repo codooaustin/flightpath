@@ -183,8 +183,8 @@ export const FILE_CATEGORY_LABELS: Record<FileCategory, string> = {
 };
 
 export const MISSION_STATUS_LABELS: Record<MissionStatus, string> = {
-  locked: "Locked",
-  available: "Available",
-  in_progress: "In Progress",
-  completed: "Completed",
+  locked: "Awaiting Departure",
+  available: "Cleared for Takeoff",
+  in_progress: "In-Flight",
+  completed: "Landed",
 };

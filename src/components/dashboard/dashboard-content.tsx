@@ -142,7 +142,7 @@ export function DashboardContent({
             </div>
             <Progress value={progress.percentage} className="h-2" />
             <p className="text-sm text-muted-foreground">
-              {progress.completed} of {progress.total} missions completed
+              {progress.completed} of {progress.total} missions landed
             </p>
           </CardContent>
         </Card>
@@ -168,29 +168,36 @@ export function DashboardContent({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-sky-600" />
-              Next Mission
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {nextMission?.mission ? (
-              <div className="space-y-2">
-                <p className="font-medium">{nextMission.mission.title}</p>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {nextMission.mission.description}
+        <Link href="/missions" className="group block">
+          <Card className="h-full cursor-pointer transition-shadow group-hover:shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-sky-600" />
+                  Next Mission
+                </span>
+                <span className="text-sm font-normal text-sky-600 group-hover:underline">
+                  View missions →
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {nextMission?.mission ? (
+                <div className="space-y-2">
+                  <p className="font-medium">{nextMission.mission.title}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {nextMission.mission.description}
+                  </p>
+                  <MissionStatusBadge status={nextMission.status} />
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  All missions landed!
                 </p>
-                <MissionStatusBadge status={nextMission.status} />
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                All missions completed!
-              </p>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
 
         <Card>
           <CardHeader>

@@ -164,7 +164,7 @@ export function MissionsContent({
                     onClick={() => handleStatusChange("in_progress")}
                     disabled={loading}
                   >
-                    Start Mission
+                    Take Off
                   </Button>
                 )}
                 {selected.status === "in_progress" && (
@@ -172,7 +172,7 @@ export function MissionsContent({
                     onClick={() => handleStatusChange("completed")}
                     disabled={loading}
                   >
-                    Mark Complete
+                    Land
                   </Button>
                 )}
               </div>
