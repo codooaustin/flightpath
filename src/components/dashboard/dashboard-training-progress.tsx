@@ -3,45 +3,54 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { FlightProgress } from "@/components/dashboard/flight-progress";
+import { FaaHelpTip } from "@/components/certification/faa-help-tip";
+import {
+  MissionStatusBadge,
+  getMissionSurfaceStyles,
+} from "@/components/missions/mission-status-badge";
+import type { FlightHourTotals } from "@/lib/calculations/flight-hours";
 import { formatHours } from "@/lib/calculations/flight-hours";
 import {
   formatAgeEligibility,
-  type PilotMilestone,
+  formatTypicalHourRange,
 } from "@/lib/calculations/certification";
-import { Award } from "lucide-react";
+import { getStageHourGuidance } from "@/lib/data/stage-guidance";
+import type { Mission, Stage, UserMission } from "@/types/models";
+import { Award, Plane, Target } from "lucide-react";
 
 interface DashboardTrainingProgressProps {
-  totalHours: number;
-  nextMilestone: PilotMilestone | null;
-  milestoneTarget: number | null;
-  milestoneProgress: number;
-  nextAchievement: { target: number; remaining: number } | null;
-  careerMarker: {
-    current: { name: string };
-    next: { name: string } | null;
-  };
+  currentStage: Stage | null;
+  stageProgress: { completed: number; total: number; percentage: number };
+  nextMission: (UserMission & { mission?: Mission }) | null;
+  hourTotals: FlightHourTotals;
   age: number | null;
   birthDate: string | null;
-  instrumentProgress: {
-    instrument: { current: number; target: number; percent: number };
-    crossCountryPic: { current: number; target: number; percent: number };
-  } | null;
 }
 
 export function DashboardTrainingProgress({
-  totalHours,
-  nextMilestone,
-  milestoneTarget,
-  milestoneProgress,
-  nextAchievement,
-  careerMarker,
+  currentStage,
+  stageProgress,
+  nextMission,
+  hourTotals,
   age,
   birthDate,
-  instrumentProgress,
 }: DashboardTrainingProgressProps) {
+  const guidance = currentStage
+    ? getStageHourGuidance(currentStage.name, hourTotals)
+    : null;
+  const primaryRequirement = guidance?.requirements[0] ?? null;
+  const additionalRequirements = guidance?.requirements.slice(1) ?? [];
+  const typicalRangeLabel = guidance?.milestone
+    ? formatTypicalHourRange(guidance.milestone)
+    : null;
+  const hoursRemaining =
+    primaryRequirement != null
+      ? Math.max(0, primaryRequirement.target - primaryRequirement.current)
+      : null;
+
   return (
     <Card className="flex h-full flex-col">
-      <CardHeader>
+      <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-2">
             <Award className="h-5 w-5 text-sky-600" />
@@ -55,53 +64,151 @@ export function DashboardTrainingProgress({
           </Link>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <p className="text-3xl font-bold">{formatHours(totalHours)}</p>
-          <p className="text-sm text-muted-foreground">Total logged hours</p>
-        </div>
 
-        {nextMilestone && milestoneTarget != null ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">
-                Next: {nextMilestone.name}
-              </span>
-              <span className="font-medium">
-                {formatHours(totalHours)} / {milestoneTarget} hrs
-              </span>
-            </div>
-            <FlightProgress value={milestoneProgress} />
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {nextMilestone.description}
-            </p>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            All tracked certification hour targets met.
+      <CardContent className="flex flex-1 flex-col gap-4">
+        <section className="space-y-3 rounded-lg border bg-muted/30 p-3">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Current focus
           </p>
+
+          <div className="space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="flex items-center gap-1.5 text-sm font-medium">
+                  <Target className="h-3.5 w-3.5 shrink-0 text-sky-600" />
+                  {currentStage?.name ?? "Getting started"}
+                </p>
+                {currentStage?.description && (
+                  <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
+                    {currentStage.description}
+                  </p>
+                )}
+              </div>
+              <Badge variant="secondary" className="shrink-0">
+                {stageProgress.completed}/{stageProgress.total} missions
+              </Badge>
+            </div>
+
+            {nextMission?.mission ? (
+              <Link
+                href="/missions"
+                className={getMissionSurfaceStyles(
+                  nextMission.status,
+                  "block rounded-lg border p-2.5 transition-opacity hover:opacity-90"
+                )}
+              >
+                <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <Plane className="h-3.5 w-3.5 text-sky-600" />
+                  Next mission
+                </p>
+                <p className="mt-1 font-medium leading-snug">
+                  {nextMission.mission.title}
+                </p>
+                <div className="mt-1.5">
+                  <MissionStatusBadge status={nextMission.status} />
+                </div>
+              </Link>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                All missions in this stage are landed.
+              </p>
+            )}
+          </div>
+        </section>
+
+        {guidance && primaryRequirement ? (
+          <section className="space-y-3">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Hour goal
+              </p>
+              <div className="mt-1 flex items-center gap-1">
+                <p className="font-semibold">{guidance.milestone.name}</p>
+                {guidance.faaResource && (
+                  <FaaHelpTip resource={guidance.faaResource} />
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {guidance.milestone.description}
+              </p>
+              {typicalRangeLabel && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Typical training: {typicalRangeLabel}
+                  {guidance.faaMinimum != null && guidance.faaMinimum > 0
+                    ? ` · FAA minimum: ${guidance.faaMinimum} hrs`
+                    : ""}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-end justify-between gap-2">
+                <div>
+                  <p className="text-2xl font-bold">
+                    {formatHours(primaryRequirement.current)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {primaryRequirement.label}
+                  </p>
+                </div>
+                <p className="text-right text-sm font-medium">
+                  {formatHours(primaryRequirement.current)} /{" "}
+                  {formatHours(primaryRequirement.target)} hrs
+                </p>
+              </div>
+              <FlightProgress value={primaryRequirement.percent} />
+              {hoursRemaining != null && hoursRemaining > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {formatHours(hoursRemaining)} remaining to target
+                </p>
+              )}
+            </div>
+          </section>
+        ) : (
+          <section className="space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Hour goal
+            </p>
+            <p className="text-2xl font-bold">
+              {formatHours(hourTotals.total)}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Total logged hours. Advance on the roadmap to unlock stage hour
+              targets.
+            </p>
+          </section>
         )}
 
-        {nextAchievement && (
-          <Badge variant="secondary">
-            {nextAchievement.target} hrs —{" "}
-            {formatHours(nextAchievement.remaining)} to go
-          </Badge>
+        {additionalRequirements.length > 0 && (
+          <section className="space-y-3 border-t pt-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Additional requirements
+            </p>
+            {additionalRequirements.map((requirement) => (
+              <div key={requirement.label} className="space-y-1.5">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {requirement.label}
+                  </span>
+                  <span className="font-medium">
+                    {formatHours(requirement.current)} /{" "}
+                    {formatHours(requirement.target)} hrs
+                  </span>
+                </div>
+                <Progress value={requirement.percent} className="h-1.5" />
+              </div>
+            ))}
+          </section>
         )}
 
-        <p className="text-xs text-muted-foreground">
-          {careerMarker.current.name}
-          {careerMarker.next ? ` · Next: ${careerMarker.next.name}` : ""}
-        </p>
-
-        <div className="space-y-1 border-t pt-3">
+        <section className="mt-auto space-y-1 border-t pt-3 text-sm">
           {age != null ? (
-            <p className="text-sm">
+            <p>
               <span className="text-muted-foreground">Age: </span>
               <span className="font-medium">{age} years</span>
             </p>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground">
               Add your birthday in{" "}
               <Link href="/settings" className="text-sky-600 hover:underline">
                 Settings
@@ -109,43 +216,12 @@ export function DashboardTrainingProgress({
               to track age requirements.
             </p>
           )}
-          {nextMilestone && (
-            <p className="text-sm text-muted-foreground">
-              {formatAgeEligibility(birthDate, nextMilestone)}
+          {guidance?.milestone && (
+            <p className="text-muted-foreground">
+              {formatAgeEligibility(birthDate, guidance.milestone)}
             </p>
           )}
-        </div>
-
-        {instrumentProgress && (
-          <div className="space-y-3 border-t pt-3">
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-xs">
-                <span>Instrument hours</span>
-                <span>
-                  {formatHours(instrumentProgress.instrument.current)} /{" "}
-                  {instrumentProgress.instrument.target}
-                </span>
-              </div>
-              <Progress
-                value={instrumentProgress.instrument.percent}
-                className="h-1.5"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-xs">
-                <span>PIC cross-country (approx.)</span>
-                <span>
-                  {formatHours(instrumentProgress.crossCountryPic.current)} /{" "}
-                  {instrumentProgress.crossCountryPic.target}
-                </span>
-              </div>
-              <Progress
-                value={instrumentProgress.crossCountryPic.percent}
-                className="h-1.5"
-              />
-            </div>
-          </div>
-        )}
+        </section>
       </CardContent>
     </Card>
   );

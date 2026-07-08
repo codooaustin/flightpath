@@ -1,6 +1,5 @@
-import { Badge } from "@/components/ui/badge";
 import {
-  FLIGHT_STOP_SHORT,
+  FLIGHT_STOP_LABELS,
   type FlightRouteStop,
 } from "@/lib/flights/route";
 import { cn } from "@/lib/utils";
@@ -35,14 +34,14 @@ function stopIcon(
   if (stop.stop_type === "touch_and_go") {
     return {
       icon: CircleDot,
-      label: FLIGHT_STOP_SHORT.touch_and_go,
+      label: FLIGHT_STOP_LABELS.touch_and_go,
       className: "bg-amber-100 text-amber-700",
     };
   }
   if (stop.stop_type === "full_stop") {
     return {
       icon: MapPin,
-      label: FLIGHT_STOP_SHORT.full_stop,
+      label: FLIGHT_STOP_LABELS.full_stop,
       className: "bg-violet-100 text-violet-700",
     };
   }
@@ -78,8 +77,6 @@ export function FlightRoutePath({ stops, className }: FlightRoutePathProps) {
           index,
           stops.length
         );
-        const showStopBadge =
-          stop.stop_type === "touch_and_go" || stop.stop_type === "full_stop";
 
         return (
           <div key={`${stop.airport}-${index}`} className="flex items-center">
@@ -97,15 +94,10 @@ export function FlightRoutePath({ stops, className }: FlightRoutePathProps) {
                 <p className="font-mono text-sm font-bold tracking-wide">
                   {stop.airport || "—"}
                 </p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                <p className="text-[10px] tracking-wide text-muted-foreground">
                   {label}
                 </p>
               </div>
-              {showStopBadge && (
-                <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
-                  {FLIGHT_STOP_SHORT[stop.stop_type]}
-                </Badge>
-              )}
             </div>
             {index < stops.length - 1 && (
               <ArrowRight

@@ -8,19 +8,12 @@ import {
   calculateEstimatedRemaining,
 } from "@/lib/calculations/costs";
 import { sumFlightHours } from "@/lib/calculations/flight-hours";
-import {
-  getAge,
-  getCareerMarker,
-  getInstrumentRequirementProgress,
-  getMilestoneHourTarget,
-  getMilestoneProgress,
-  getNextHourAchievement,
-  getNextMilestone,
-} from "@/lib/calculations/certification";
+import { getAge } from "@/lib/calculations/certification";
 import {
   getRelevantFaaResources,
   getSupplementalFaaResources,
 } from "@/lib/data/faa-resources";
+import { getStageHourGuidance } from "@/lib/data/stage-guidance";
 import { DashboardHero } from "@/components/dashboard/dashboard-hero";
 import { DashboardActivityGrid } from "@/components/dashboard/dashboard-activity-grid";
 import { DashboardTrainingProgress } from "@/components/dashboard/dashboard-training-progress";
@@ -71,24 +64,15 @@ export function DashboardContent({
   const estimatedRemaining = calculateEstimatedRemaining(missions, userMissions);
 
   const hourTotals = sumFlightHours(flights);
-  const nextMilestone = getNextMilestone(hourTotals.total);
-  const nextAchievement = getNextHourAchievement(hourTotals.total);
-  const careerMarker = getCareerMarker(hourTotals.total);
-  const milestoneTarget = nextMilestone
-    ? getMilestoneHourTarget(nextMilestone)
-    : null;
-  const milestoneProgress = nextMilestone
-    ? getMilestoneProgress(hourTotals.total, nextMilestone)
-    : 0;
-  const instrumentProgress = nextMilestone
-    ? getInstrumentRequirementProgress(hourTotals, nextMilestone)
+  const stageGuidance = currentStage
+    ? getStageHourGuidance(currentStage.name, hourTotals)
     : null;
   const age = studentProfile?.birth_date
     ? getAge(studentProfile.birth_date)
     : null;
   const faaResources = getRelevantFaaResources(
     hourTotals.total,
-    nextMilestone?.id ?? null
+    stageGuidance?.milestone.id ?? null
   );
   const supplementalFaaResources = getSupplementalFaaResources().filter(
     (resource) =>
@@ -120,15 +104,12 @@ export function DashboardContent({
 
           <div className="grid gap-4 lg:grid-cols-2 lg:items-stretch">
             <DashboardTrainingProgress
-              totalHours={hourTotals.total}
-              nextMilestone={nextMilestone}
-              milestoneTarget={milestoneTarget}
-              milestoneProgress={milestoneProgress}
-              nextAchievement={nextAchievement}
-              careerMarker={careerMarker}
+              currentStage={currentStage}
+              stageProgress={progress}
+              nextMission={nextMission}
+              hourTotals={hourTotals}
               age={age}
               birthDate={studentProfile?.birth_date ?? null}
-              instrumentProgress={instrumentProgress}
             />
             <FlightLogCard entries={flightMapEntries} />
           </div>

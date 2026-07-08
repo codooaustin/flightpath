@@ -51,10 +51,34 @@ export function getAge(birthDate: string, asOf = new Date()): number {
 }
 
 export function getMilestoneHourTarget(milestone: PilotMilestone): number | null {
-  if (milestone.faa_minimum_hours != null) {
+  if (milestone.faa_minimum_hours != null && milestone.faa_minimum_hours > 0) {
     return milestone.faa_minimum_hours;
   }
+  if (milestone.typical_hours_range.length >= 2) {
+    return milestone.typical_hours_range[1];
+  }
   return milestone.typical_hours_range[0] ?? null;
+}
+
+export function getMilestoneTypicalRange(
+  milestone: PilotMilestone
+): [number, number] | null {
+  if (milestone.typical_hours_range.length >= 2) {
+    return [
+      milestone.typical_hours_range[0],
+      milestone.typical_hours_range[1],
+    ];
+  }
+  return null;
+}
+
+export function formatTypicalHourRange(milestone: PilotMilestone): string | null {
+  const range = getMilestoneTypicalRange(milestone);
+  if (!range) return null;
+  const [low, high] = range;
+  if (low === high) return `${high} hrs`;
+  if (low === 0) return `up to ${high} hrs`;
+  return `${low}–${high} hrs`;
 }
 
 export function getNextMilestone(
