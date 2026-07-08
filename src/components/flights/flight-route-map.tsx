@@ -13,7 +13,7 @@ import {
 import L from "leaflet";
 import type { FlightMapEntry, FlightMapPoint } from "@/lib/flights/map-data";
 import { getMapBounds } from "@/lib/flights/map-data";
-import { getMapRouteColor, getMapTileUrl } from "@/lib/flights/map-tiles";
+import { getMapRouteColor, getMapTileLayers } from "@/lib/flights/map-tiles";
 import { MapAirportPopupContent } from "@/components/flights/map-airport-popup-content";
 import "leaflet/dist/leaflet.css";
 
@@ -142,7 +142,7 @@ export function FlightRouteMap({
   }, []);
 
   const isDark = mounted && resolvedTheme === "dark";
-  const tileUrl = getMapTileUrl(isDark);
+  const tileLayers = getMapTileLayers(isDark);
   const routeColor = getMapRouteColor(isDark);
 
   if (!entry || entry.points.length === 0) {
@@ -181,7 +181,9 @@ export function FlightRouteMap({
         attributionControl={false}
       >
         <ScrollWheelZoomOnHover />
-        <TileLayer key={tileUrl} url={tileUrl} />
+        {tileLayers.map((layer) => (
+          <TileLayer key={layer.url} url={layer.url} />
+        ))}
         <FitBounds points={entry.points} enabled={!focusedPoint} />
         <FocusAirport point={focusedPoint} />
         <Polyline

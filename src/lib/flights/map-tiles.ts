@@ -1,6 +1,17 @@
-export const MAP_TILE_URLS = {
-  light: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+export const MAP_TILE_LAYERS = {
+  light: [
+    {
+      url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    },
+  ],
+  dark: [
+    {
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    },
+    {
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
+    },
+  ],
 } as const;
 
 export const MAP_ROUTE_COLORS = {
@@ -8,8 +19,8 @@ export const MAP_ROUTE_COLORS = {
   dark: "#38bdf8",
 } as const;
 
-export function getMapTileUrl(isDark: boolean) {
-  return isDark ? MAP_TILE_URLS.dark : MAP_TILE_URLS.light;
+export function getMapTileLayers(isDark: boolean) {
+  return isDark ? MAP_TILE_LAYERS.dark : MAP_TILE_LAYERS.light;
 }
 
 export function getMapRouteColor(isDark: boolean) {

@@ -211,3 +211,8 @@
 .flight-route-map .leaflet-control-zoom-out {
   border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
+
+/* Slight boost for dark map label and line legibility. */
+.dark .flight-route-map .leaflet-tile-pane {
+  filter: brightness(1.12) contrast(1.08);
+}
