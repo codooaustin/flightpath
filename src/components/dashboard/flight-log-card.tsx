@@ -1,30 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatHours } from "@/lib/calculations/flight-hours";
+import { formatDateOnly } from "@/lib/dates";
 import { formatFlightRoute } from "@/lib/flights/route";
 import type { Flight } from "@/types/models";
 import { MapPin, Plane } from "lucide-react";
 
 interface FlightLogCardProps {
   flights: Flight[];
+  limit?: number;
 }
 
-export function FlightLogCard({ flights }: FlightLogCardProps) {
-  const recent = flights.slice(0, 5);
+export function FlightLogCard({ flights, limit = 5 }: FlightLogCardProps) {
+  const recent = flights.slice(0, limit);
 
   return (
-    <Card className="md:col-span-2 lg:col-span-3">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-2">
             <MapPin className="h-5 w-5 text-sky-600" />
             Flight Log
           </span>
-          <Link href="/logbook" className="text-sm font-normal text-sky-600 hover:underline">
+          <Link
+            href="/logbook"
+            className="text-sm font-normal text-sky-600 hover:underline"
+          >
             View logbook →
           </Link>
         </CardTitle>
@@ -33,13 +37,10 @@ export function FlightLogCard({ flights }: FlightLogCardProps) {
         {recent.length > 0 ? (
           <ul className="space-y-2">
             {recent.map((flight) => (
-              <li
-                key={flight.id}
-                className="rounded-lg border p-3"
-              >
+              <li key={flight.id} className="rounded-lg border p-3">
                 <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="font-medium">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">
                       {formatFlightRoute(
                         flight.route,
                         flight.departure_airport,
@@ -47,17 +48,18 @@ export function FlightLogCard({ flights }: FlightLogCardProps) {
                       )}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(flight.date), "MMM d, yyyy")}
+                      {formatDateOnly(flight.date)}
                       {flight.aircraft ? ` · ${flight.aircraft}` : ""}
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex shrink-0 flex-wrap gap-2">
                     <Badge variant="secondary">
                       {formatHours(Number(flight.flight_time))} hrs
                     </Badge>
                     {flight.landings != null && (
                       <Badge variant="outline">
-                        {flight.landings} landing{flight.landings === 1 ? "" : "s"}
+                        {flight.landings} landing
+                        {flight.landings === 1 ? "" : "s"}
                       </Badge>
                     )}
                   </div>
@@ -71,7 +73,10 @@ export function FlightLogCard({ flights }: FlightLogCardProps) {
             <p className="text-sm text-muted-foreground">
               No flights logged yet.
             </p>
-            <Link href="/logbook" className="text-sm font-medium text-sky-600 hover:underline">
+            <Link
+              href="/logbook"
+              className="text-sm font-medium text-sky-600 hover:underline"
+            >
               Log your first flight →
             </Link>
           </div>

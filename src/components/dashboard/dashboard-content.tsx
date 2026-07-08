@@ -1,8 +1,3 @@
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FlightProgress } from "@/components/dashboard/flight-progress";
-import { Badge } from "@/components/ui/badge";
-import { Target, Calendar, DollarSign, BookOpen, Plane, Award } from "lucide-react";
 import {
   calculateProgress,
   getCurrentStage,
@@ -11,14 +6,9 @@ import {
 import {
   calculateTotalSpent,
   calculateEstimatedRemaining,
-  formatCurrency,
 } from "@/lib/calculations/costs";
+import { sumFlightHours } from "@/lib/calculations/flight-hours";
 import {
-  formatHours,
-  sumFlightHours,
-} from "@/lib/calculations/flight-hours";
-import {
-  formatAgeEligibility,
   getAge,
   getCareerMarker,
   getInstrumentRequirementProgress,
@@ -28,20 +18,17 @@ import {
   getNextMilestone,
 } from "@/lib/calculations/certification";
 import {
-  FAA_RESOURCES,
-  getFaaResource,
   getRelevantFaaResources,
   getSupplementalFaaResources,
 } from "@/lib/data/faa-resources";
+import { DashboardHero } from "@/components/dashboard/dashboard-hero";
+import { DashboardKpiStrip } from "@/components/dashboard/dashboard-kpi-strip";
+import { DashboardActivityGrid } from "@/components/dashboard/dashboard-activity-grid";
+import { DashboardTrainingProgress } from "@/components/dashboard/dashboard-training-progress";
 import {
-  FaaGuidancePanel,
-  FaaHelpTip,
-  FaaResourceLinks,
-} from "@/components/certification/faa-help-tip";
-import { FlightLogCard } from "@/components/dashboard/flight-log-card";
-import { EVENT_TYPE_LABELS } from "@/types/models";
-import { MissionStatusBadge, getMissionSurfaceStyles } from "@/components/missions/mission-status-badge";
-import { MissionResourceLinks } from "@/components/missions/mission-resource-links";
+  DashboardFaaMobileButton,
+  DashboardFaaSidebar,
+} from "@/components/dashboard/dashboard-faa-sidebar";
 import type {
   CalendarEvent,
   Expense,
@@ -52,7 +39,6 @@ import type {
   Stage,
   UserMission,
 } from "@/types/models";
-import { format } from "date-fns";
 
 interface DashboardContentProps {
   stages: Stage[];
@@ -105,311 +91,63 @@ export function DashboardContent({
     (resource) =>
       !faaResources.some((existing) => existing.milestoneId === resource.milestoneId)
   );
-  const nextMilestoneResource = nextMilestone
-    ? getFaaResource(nextMilestone.id)
-    : null;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Your aviation journey at a glance
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Your aviation journey at a glance
+          </p>
+        </div>
+        <DashboardFaaMobileButton
+          resources={faaResources}
+          supplemental={supplementalFaaResources}
+        />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-sky-600" />
-              Current Stage
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold">
-                  {currentStage?.name ?? "Getting Started"}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {currentStage?.description}
-                </p>
-              </div>
-              <Badge variant="secondary">{progress.percentage}% complete</Badge>
-            </div>
-            <FlightProgress value={progress.percentage} />
-            <p className="text-sm text-muted-foreground">
-              {progress.completed} of {progress.total} missions landed
-            </p>
-          </CardContent>
-        </Card>
+      <div className="flex gap-4 lg:gap-6">
+        <div className="min-w-0 flex-1 space-y-6">
+          <DashboardHero
+            currentStage={currentStage}
+            progress={progress}
+            nextMission={nextMission}
+          />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-sky-600" />
-              Cost Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div>
-              <p className="text-sm text-muted-foreground">Spent</p>
-              <p className="text-2xl font-bold">{formatCurrency(totalSpent)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Estimated remaining</p>
-              <p className="text-lg font-semibold">
-                {formatCurrency(estimatedRemaining)}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          <DashboardKpiStrip
+            totalHours={hourTotals.total}
+            totalSpent={totalSpent}
+            nextEvent={events[0] ?? null}
+            stagePercentage={progress.percentage}
+          />
 
-        <Card
-          className={
-            nextMission?.status
-              ? getMissionSurfaceStyles(nextMission.status, "h-full")
-              : "h-full"
-          }
-        >
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-sky-600" />
-                Next Mission
-              </span>
-              <Link
-                href="/missions"
-                className="text-sm font-normal text-sky-600 hover:underline"
-              >
-                View missions →
-              </Link>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {nextMission?.mission ? (
-              <div className="space-y-3">
-                <Link href="/missions" className="block space-y-2 hover:opacity-90">
-                  <p className="font-medium">{nextMission.mission.title}</p>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {nextMission.mission.description}
-                  </p>
-                  <MissionStatusBadge status={nextMission.status} />
-                </Link>
-                <MissionResourceLinks
-                  missionTitle={nextMission.mission.title}
-                  compact
-                  title="Helpful resources"
-                />
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                All missions landed!
-              </p>
-            )}
-          </CardContent>
-        </Card>
+          <DashboardActivityGrid
+            flights={flights}
+            events={events}
+            journal={journal}
+            totalSpent={totalSpent}
+            estimatedRemaining={estimatedRemaining}
+          />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-sky-600" />
-              Upcoming Events
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {events.length > 0 ? (
-              <ul className="space-y-3">
-                {events.map((event) => (
-                  <li key={event.id} className="flex items-start justify-between">
-                    <div>
-                      <p className="font-medium">{event.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(event.start_date), "MMM d, yyyy")}
-                      </p>
-                    </div>
-                    <Badge variant="outline">
-                      {EVENT_TYPE_LABELS[event.type]}
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No upcoming events. Add one on the Calendar.
-              </p>
-            )}
-          </CardContent>
-        </Card>
+          <DashboardTrainingProgress
+            totalHours={hourTotals.total}
+            nextMilestone={nextMilestone}
+            milestoneTarget={milestoneTarget}
+            milestoneProgress={milestoneProgress}
+            nextAchievement={nextAchievement}
+            careerMarker={careerMarker}
+            age={age}
+            birthDate={studentProfile?.birth_date ?? null}
+            instrumentProgress={instrumentProgress}
+          />
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-sky-600" />
-              Recent Journal
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {journal.length > 0 ? (
-              <div>
-                <p className="font-medium">{journal[0].title}</p>
-                <p className="mt-1 text-sm text-muted-foreground line-clamp-3">
-                  {journal[0].content}
-                </p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {format(new Date(journal[0].entry_date), "MMM d, yyyy")}
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No journal entries yet. Start capturing your journey.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        <FlightLogCard flights={flights} />
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plane className="h-5 w-5 text-sky-600" />
-              Flight Hours
-              <FaaHelpTip resource={FAA_RESOURCES.flight_logbook} />
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="text-3xl font-bold">
-                {formatHours(hourTotals.total)}
-              </p>
-              <p className="text-sm text-muted-foreground">Total logged hours</p>
-            </div>
-            {nextMilestone && milestoneTarget != null ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    Next: {nextMilestone.name}
-                  </span>
-                  <span className="font-medium">
-                    {formatHours(hourTotals.total)} / {milestoneTarget} hrs
-                  </span>
-                </div>
-                <FlightProgress value={milestoneProgress} />
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                All tracked certification hour targets met.
-              </p>
-            )}
-            {nextAchievement && (
-              <Badge variant="secondary">
-                {nextAchievement.target} hrs —{" "}
-                {formatHours(nextAchievement.remaining)} to go
-              </Badge>
-            )}
-            <p className="text-xs text-muted-foreground">
-              {careerMarker.current.name}
-              {careerMarker.next
-                ? ` · Next: ${careerMarker.next.name}`
-                : ""}
-            </p>
-            <Link
-              href="/logbook"
-              className="text-sm font-medium text-sky-600 hover:underline"
-            >
-              Log a flight →
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-sky-600" />
-              Certification & Age
-              <FaaHelpTip resource={FAA_RESOURCES.age_requirements} />
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {age != null ? (
-              <p className="text-sm">
-                <span className="text-muted-foreground">Age: </span>
-                <span className="font-medium">{age} years</span>
-              </p>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Add your birthday in{" "}
-                <Link href="/settings" className="text-sky-600 hover:underline">
-                  Settings
-                </Link>{" "}
-                to track age requirements.
-              </p>
-            )}
-            {nextMilestone ? (
-              <>
-                <div>
-                  <div className="flex items-center gap-1">
-                    <p className="font-medium">{nextMilestone.name}</p>
-                    {nextMilestoneResource && (
-                      <FaaHelpTip resource={nextMilestoneResource} />
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {nextMilestone.description}
-                  </p>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {formatAgeEligibility(
-                    studentProfile?.birth_date ?? null,
-                    nextMilestone
-                  )}
-                </p>
-                {instrumentProgress && (
-                  <div className="space-y-2 border-t pt-3">
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span>Instrument hours</span>
-                        <span>
-                          {formatHours(instrumentProgress.instrument.current)} /{" "}
-                          {instrumentProgress.instrument.target}
-                        </span>
-                      </div>
-                      <FlightProgress
-                        value={instrumentProgress.instrument.percent}
-                        trackClassName="h-1.5"
-                        iconClassName="h-3 w-3"
-                        className="pt-3"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span>PIC cross-country (approx.)</span>
-                        <span>
-                          {formatHours(instrumentProgress.crossCountryPic.current)}{" "}
-                          / {instrumentProgress.crossCountryPic.target}
-                        </span>
-                      </div>
-                      <FlightProgress
-                        value={instrumentProgress.crossCountryPic.percent}
-                        trackClassName="h-1.5"
-                        iconClassName="h-3 w-3"
-                        className="pt-3"
-                      />
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No remaining hour-based certification targets.
-              </p>
-            )}
-            <FaaGuidancePanel resources={faaResources} />
-            <FaaResourceLinks resources={supplementalFaaResources} />
-          </CardContent>
-        </Card>
+        <DashboardFaaSidebar
+          resources={faaResources}
+          supplemental={supplementalFaaResources}
+          defaultOpen={hourTotals.total < 30}
+        />
       </div>
     </div>
   );
