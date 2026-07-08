@@ -39,7 +39,6 @@ import {
   FaaResourceLinks,
 } from "@/components/certification/faa-help-tip";
 import { FlightLogCard } from "@/components/dashboard/flight-log-card";
-import type { FlightMapEntry } from "@/lib/flights/map-data";
 import { EVENT_TYPE_LABELS } from "@/types/models";
 import { MissionStatusBadge } from "@/components/missions/mission-status-badge";
 import { MissionResourceLinks } from "@/components/missions/mission-resource-links";
@@ -64,7 +63,6 @@ interface DashboardContentProps {
   journal: JournalEntry[];
   flights: Flight[];
   studentProfile: Profile | null;
-  flightMapEntries: FlightMapEntry[];
 }
 
 export function DashboardContent({
@@ -76,7 +74,6 @@ export function DashboardContent({
   journal,
   flights,
   studentProfile,
-  flightMapEntries,
 }: DashboardContentProps) {
   const progress = calculateProgress(userMissions);
   const currentStage = getCurrentStage(stages, missions, userMissions);
@@ -266,7 +263,7 @@ export function DashboardContent({
           </CardContent>
         </Card>
 
-        <FlightLogCard entries={flightMapEntries} />
+        <FlightLogCard flights={flights} />
 
         <Card>
           <CardHeader>

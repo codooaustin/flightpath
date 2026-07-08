@@ -1,18 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FlightLogMapPanel } from "@/components/flights/flight-log-map-panel";
-import type { FlightMapEntry } from "@/lib/flights/map-data";
+import { Badge } from "@/components/ui/badge";
+import { formatHours } from "@/lib/calculations/flight-hours";
+import { formatFlightRoute } from "@/lib/flights/route";
+import type { Flight } from "@/types/models";
 import { MapPin, Plane } from "lucide-react";
 
 interface FlightLogCardProps {
-  entries: FlightMapEntry[];
+  flights: Flight[];
 }
 
-export function FlightLogCard({ entries }: FlightLogCardProps) {
-  const [selectedId, setSelectedId] = useState(entries[0]?.id ?? null);
+export function FlightLogCard({ flights }: FlightLogCardProps) {
+  const recent = flights.slice(0, 5);
 
   return (
     <Card className="md:col-span-2 lg:col-span-3">
@@ -28,12 +30,41 @@ export function FlightLogCard({ entries }: FlightLogCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {entries.length > 0 ? (
-          <FlightLogMapPanel
-            entries={entries}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-          />
+        {recent.length > 0 ? (
+          <ul className="space-y-2">
+            {recent.map((flight) => (
+              <li
+                key={flight.id}
+                className="rounded-lg border p-3"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="font-medium">
+                      {formatFlightRoute(
+                        flight.route,
+                        flight.departure_airport,
+                        flight.arrival_airport
+                      )}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(new Date(flight.date), "MMM d, yyyy")}
+                      {flight.aircraft ? ` · ${flight.aircraft}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="secondary">
+                      {formatHours(Number(flight.flight_time))} hrs
+                    </Badge>
+                    {flight.landings != null && (
+                      <Badge variant="outline">
+                        {flight.landings} landing{flight.landings === 1 ? "" : "s"}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
         ) : (
           <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-10 text-center">
             <Plane className="h-8 w-8 text-muted-foreground" />

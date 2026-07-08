@@ -66,7 +66,9 @@ export function FlightRouteMap({
   );
 
   return (
-    <div className={`overflow-hidden rounded-lg border ${className ?? ""}`}>
+    <div
+      className={`relative isolate z-0 overflow-hidden rounded-lg border ${className ?? ""}`}
+    >
       <MapContainer
         center={[center.lat, center.lng]}
         zoom={9}

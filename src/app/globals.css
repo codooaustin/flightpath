@@ -127,4 +127,9 @@
   html {
     @apply font-sans;
   }
+
+  /* Keep Leaflet below portaled overlays (tooltips, popovers, dialogs). */
+  .leaflet-container {
+    z-index: 0 !important;
+  }
 }
